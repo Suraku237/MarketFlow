@@ -11,6 +11,17 @@ function createApp() {
 
   app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
+  app.get('/', (req, res) => res.json({
+    service: 'smartstock-auth-service',
+    endpoints: [
+      'GET /health',
+      'POST /api/auth/register',
+      'POST /api/auth/login',
+      'GET /api/auth/me',
+      'GET /api/reports',
+    ],
+  }));
+
   app.use('/api/auth', authRoutes);
   app.use('/api', demoRoutes);
 

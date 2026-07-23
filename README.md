@@ -27,6 +27,11 @@ Starts the auth service on `http://localhost:3000`. See
 [`services/auth-service/README.md`](services/auth-service/README.md) for
 endpoints and a demo script.
 
+The React frontend lives in a separate repo (`marketflow_frontend`) with its
+own `docker-compose.yml` — run this backend first, then `docker compose up
+--build` there to get the webapp on `http://localhost:5173`. See that repo's
+README for details.
+
 ## Contributing
 
 See [`BRANCHING.md`](BRANCHING.md) for the branch naming rule. Branch off
