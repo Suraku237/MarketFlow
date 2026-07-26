@@ -1,0 +1,146 @@
+@startuml er_diagram
+hide circle
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Helvetica"
+skinparam entity {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  FontColor #2C2C2A
+}
+skinparam arrow {
+  Color #1D9E75
+  FontColor #26215C
+}
+
+' ===================== INVENTORY MODULE =====================
+entity "categories" as categories {
+  * id : INTEGER <<PK>>
+  --
+  name : TEXT <<unique>>
+}
+
+entity "suppliers" as suppliers {
+  * id : INTEGER <<PK>>
+  --
+  name : TEXT
+  contact_email : TEXT
+  contact_phone : TEXT
+  address : TEXT
+  created_at : TEXT
+}
+
+entity "products" as products {
+  * id : INTEGER <<PK>>
+  --
+  sku : TEXT <<unique>>
+  name : TEXT
+  category_id : INTEGER <<FK>>
+  supplier_id : INTEGER <<FK>>
+  unit_price : REAL
+  quantity_in_stock : INTEGER
+  reorder_level : INTEGER
+  created_at : TEXT
+  updated_at : TEXT
+}
+
+entity "stock_movements" as stock_movements {
+  * id : INTEGER <<PK>>
+  --
+  product_id : INTEGER <<FK>>
+  change_qty : INTEGER
+  movement_type : TEXT
+  reference : TEXT
+  created_by : INTEGER <<FK>>
+  created_at : TEXT
+}
+
+' ===================== STAFF (shared) =====================
+entity "users" as users {
+  * id : INTEGER <<PK>>
+  --
+  name : TEXT
+  email : TEXT <<unique>>
+  password_hash : TEXT
+  role : TEXT
+  created_at : TEXT
+}
+
+' ===================== SALES MODULE =====================
+entity "sales" as sales {
+  * id : INTEGER <<PK>>
+  --
+  cashier_id : INTEGER <<FK>>
+  sale_date : TEXT
+  total_amount : REAL
+  status : TEXT
+}
+
+entity "sale_items" as sale_items {
+  * id : INTEGER <<PK>>
+  --
+  sale_id : INTEGER <<FK>>
+  product_id : INTEGER <<FK>>
+  quantity : INTEGER
+  unit_price : REAL
+  subtotal : REAL
+}
+
+entity "payments" as payments {
+  * id : INTEGER <<PK>>
+  --
+  sale_id : INTEGER <<FK, unique>>
+  momo_reference : TEXT
+  amount : REAL
+  method : TEXT
+  status : TEXT
+  paid_at : TEXT
+}
+
+entity "demand_forecasts" as demand_forecasts {
+  * id : INTEGER <<PK>>
+  --
+  product_id : INTEGER <<FK>>
+  forecast_date : TEXT
+  predicted_quantity : INTEGER
+  model_version : TEXT
+  created_at : TEXT
+}
+
+' ===================== PAYROLL MODULE =====================
+entity "payroll_runs" as payroll_runs {
+  * id : INTEGER <<PK>>
+  --
+  period_start : TEXT
+  period_end : TEXT
+  run_date : TEXT
+  status : TEXT
+  created_by : INTEGER <<FK>>
+}
+
+entity "payslips" as payslips {
+  * id : INTEGER <<PK>>
+  --
+  payroll_run_id : INTEGER <<FK>>
+  staff_id : INTEGER <<FK>>
+  base_salary : REAL
+  deductions : REAL
+  net_pay : REAL
+  momo_reference : TEXT
+  status : TEXT
+}
+
+' ===================== RELATIONSHIPS =====================
+categories ||--o{ products : classifies
+suppliers  ||--o{ products : supplies
+products   ||--o{ stock_movements : "tracked by"
+users      ||--o{ stock_movements : records
+users      ||--o{ sales : processes
+sales      ||--o{ sale_items : contains
+products   ||--o{ sale_items : "sold as"
+sales      ||--|| payments : "paid via"
+products   ||--o{ demand_forecasts : "forecasted for"
+users      ||--o{ payroll_runs : creates
+payroll_runs ||--o{ payslips : generates
+users      ||--o{ payslips : receives
+
+@enduml
