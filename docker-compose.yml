@@ -7,3 +7,6 @@ services:
       PORT: 3000
       JWT_SECRET: dev-only-change-me
       JWT_EXPIRES_IN: 1h
+      DB_PATH: /app/database/smartstock.db
+    volumes:
+      - ./database:/app/database
