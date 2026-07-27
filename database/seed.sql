@@ -1,21 +1,12 @@
 -- ============================================================================
 -- SmartStock — sample seed data (for local demo / evaluation only)
--- Run AFTER schema.sql. Safe to re-run: it clears existing rows first.
+-- Runs once, right after schema.sql, via the MySQL container's
+-- docker-entrypoint-initdb.d mechanism.
 -- ============================================================================
 
-DELETE FROM payslips;
-DELETE FROM payroll_runs;
-DELETE FROM demand_forecasts;
-DELETE FROM payments;
-DELETE FROM sale_items;
-DELETE FROM sales;
-DELETE FROM stock_movements;
-DELETE FROM products;
-DELETE FROM suppliers;
-DELETE FROM categories;
-DELETE FROM users;
-
--- Staff (password hashes are placeholders — real hashes come from auth-service)
+-- Staff (password hashes are placeholders — real hashes come from auth-service;
+-- register real demo accounts through the Week 1 API instead of logging in
+-- with these rows directly).
 INSERT INTO users (name, email, password_hash, role) VALUES
     ('Rayan Kwete',   'admin@smartstock.local',   '$2a$10$placeholderadminhash', 'admin'),
     ('Neil Marshall', 'cashier@smartstock.local', '$2a$10$placeholdercashhash',  'cashier');
@@ -47,15 +38,15 @@ INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VAL
     (1, 3, 1, 800, 800);
 
 INSERT INTO payments (sale_id, momo_reference, amount, method, status, paid_at) VALUES
-    (1, 'MOMO-REF-0001', 2300, 'momo', 'approved', datetime('now'));
+    (1, 'MOMO-REF-0001', 2300, 'momo', 'approved', NOW());
 
 INSERT INTO demand_forecasts (product_id, forecast_date, predicted_quantity, model_version) VALUES
-    (1, date('now', '+7 day'), 100, 'v1'),
-    (2, date('now', '+7 day'), 35,  'v1');
+    (1, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 100, 'v1'),
+    (2, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 35,  'v1');
 
 -- Payroll
 INSERT INTO payroll_runs (period_start, period_end, status, created_by) VALUES
-    (date('now', 'start of month'), date('now', 'start of month', '+1 month', '-1 day'), 'processed', 1);
+    (DATE_FORMAT(CURDATE(), '%Y-%m-01'), LAST_DAY(CURDATE()), 'processed', 1);
 
 INSERT INTO payslips (payroll_run_id, staff_id, base_salary, deductions, net_pay, momo_reference, status) VALUES
     (1, 2, 150000, 15000, 135000, 'MOMO-PAY-0001', 'paid');

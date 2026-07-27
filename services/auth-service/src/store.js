@@ -1,11 +1,11 @@
-// SQLite-backed user store (Week 2). Reads/writes the `users` table defined
-// in database/schema.sql through the connection opened in db.js.
+// MySQL-backed user store (Week 2). Reads/writes the `users` table defined
+// in database/schema.sql through the connection pool opened in db.js.
 //
-// Routes and middleware are unchanged: they only call findByEmail() and
-// createUser(), exactly as with the old in-memory store, so swapping the
-// storage layer didn't require touching auth.routes.js or demo.routes.js.
+// Routes and middleware call findByEmail() / createUser() same as with the
+// old in-memory store — only now they're async, since mysql2 is a network
+// client rather than an in-process file.
 
-const db = require('./db');
+const pool = require('./db');
 
 function rowToUser(row) {
   if (!row) return undefined;
@@ -19,15 +19,16 @@ function rowToUser(row) {
   };
 }
 
-function findByEmail(email) {
-  const row = db.prepare('SELECT * FROM users WHERE email = ?').get(email.toLowerCase());
-  return rowToUser(row);
+async function findByEmail(email) {
+  const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [email.toLowerCase()]);
+  return rowToUser(rows[0]);
 }
 
-function createUser({ name, email, passwordHash, role }) {
-  db.prepare(
-    'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)'
-  ).run(name, email.toLowerCase(), passwordHash, role);
+async function createUser({ name, email, passwordHash, role }) {
+  await pool.query(
+    'INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)',
+    [name, email.toLowerCase(), passwordHash, role]
+  );
 
   return findByEmail(email);
 }

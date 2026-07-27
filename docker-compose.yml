@@ -1,4 +1,27 @@
 services:
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: dev-only-change-me
+      MYSQL_DATABASE: smartstock
+    ports:
+      # Host-side 3307 avoids clashing with a locally installed MySQL on
+      # 3306; auth-service still reaches this container over the internal
+      # Docker network at db:3306 regardless of this mapping.
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      # Applied once, in filename order, only when the data volume is empty
+      # (i.e. first-ever start). database/scripts/init_db.sh re-applies these
+      # on demand against an already-running container.
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1_schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/2_seed.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pdev-only-change-me"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   auth-service:
     build: ./services/auth-service
     ports:
@@ -7,6 +30,14 @@ services:
       PORT: 3000
       JWT_SECRET: dev-only-change-me
       JWT_EXPIRES_IN: 1h
-      DB_PATH: /app/database/smartstock.db
-    volumes:
-      - ./database:/app/database
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: dev-only-change-me
+      DB_NAME: smartstock
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

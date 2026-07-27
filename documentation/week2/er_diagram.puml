@@ -14,119 +14,119 @@ skinparam arrow {
 
 ' ===================== INVENTORY MODULE =====================
 entity "categories" as categories {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  name : TEXT <<unique>>
+  name : VARCHAR(100) <<unique>>
 }
 
 entity "suppliers" as suppliers {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  name : TEXT
-  contact_email : TEXT
-  contact_phone : TEXT
-  address : TEXT
-  created_at : TEXT
+  name : VARCHAR(255)
+  contact_email : VARCHAR(255)
+  contact_phone : VARCHAR(50)
+  address : VARCHAR(255)
+  created_at : DATETIME
 }
 
 entity "products" as products {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  sku : TEXT <<unique>>
-  name : TEXT
-  category_id : INTEGER <<FK>>
-  supplier_id : INTEGER <<FK>>
-  unit_price : REAL
-  quantity_in_stock : INTEGER
-  reorder_level : INTEGER
-  created_at : TEXT
-  updated_at : TEXT
+  sku : VARCHAR(50) <<unique>>
+  name : VARCHAR(255)
+  category_id : INT <<FK>>
+  supplier_id : INT <<FK>>
+  unit_price : DECIMAL(10,2)
+  quantity_in_stock : INT
+  reorder_level : INT
+  created_at : DATETIME
+  updated_at : DATETIME
 }
 
 entity "stock_movements" as stock_movements {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  product_id : INTEGER <<FK>>
-  change_qty : INTEGER
-  movement_type : TEXT
-  reference : TEXT
-  created_by : INTEGER <<FK>>
-  created_at : TEXT
+  product_id : INT <<FK>>
+  change_qty : INT
+  movement_type : ENUM
+  reference : VARCHAR(100)
+  created_by : INT <<FK>>
+  created_at : DATETIME
 }
 
 ' ===================== STAFF (shared) =====================
 entity "users" as users {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  name : TEXT
-  email : TEXT <<unique>>
-  password_hash : TEXT
-  role : TEXT
-  created_at : TEXT
+  name : VARCHAR(255)
+  email : VARCHAR(255) <<unique>>
+  password_hash : VARCHAR(255)
+  role : ENUM
+  created_at : DATETIME
 }
 
 ' ===================== SALES MODULE =====================
 entity "sales" as sales {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  cashier_id : INTEGER <<FK>>
-  sale_date : TEXT
-  total_amount : REAL
-  status : TEXT
+  cashier_id : INT <<FK>>
+  sale_date : DATETIME
+  total_amount : DECIMAL(10,2)
+  status : ENUM
 }
 
 entity "sale_items" as sale_items {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  sale_id : INTEGER <<FK>>
-  product_id : INTEGER <<FK>>
-  quantity : INTEGER
-  unit_price : REAL
-  subtotal : REAL
+  sale_id : INT <<FK>>
+  product_id : INT <<FK>>
+  quantity : INT
+  unit_price : DECIMAL(10,2)
+  subtotal : DECIMAL(10,2)
 }
 
 entity "payments" as payments {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  sale_id : INTEGER <<FK, unique>>
-  momo_reference : TEXT
-  amount : REAL
-  method : TEXT
-  status : TEXT
-  paid_at : TEXT
+  sale_id : INT <<FK, unique>>
+  momo_reference : VARCHAR(100)
+  amount : DECIMAL(10,2)
+  method : ENUM
+  status : ENUM
+  paid_at : DATETIME
 }
 
 entity "demand_forecasts" as demand_forecasts {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  product_id : INTEGER <<FK>>
-  forecast_date : TEXT
-  predicted_quantity : INTEGER
-  model_version : TEXT
-  created_at : TEXT
+  product_id : INT <<FK>>
+  forecast_date : DATE
+  predicted_quantity : INT
+  model_version : VARCHAR(20)
+  created_at : DATETIME
 }
 
 ' ===================== PAYROLL MODULE =====================
 entity "payroll_runs" as payroll_runs {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  period_start : TEXT
-  period_end : TEXT
-  run_date : TEXT
-  status : TEXT
-  created_by : INTEGER <<FK>>
+  period_start : DATE
+  period_end : DATE
+  run_date : DATETIME
+  status : ENUM
+  created_by : INT <<FK>>
 }
 
 entity "payslips" as payslips {
-  * id : INTEGER <<PK>>
+  * id : INT <<PK>>
   --
-  payroll_run_id : INTEGER <<FK>>
-  staff_id : INTEGER <<FK>>
-  base_salary : REAL
-  deductions : REAL
-  net_pay : REAL
-  momo_reference : TEXT
-  status : TEXT
+  payroll_run_id : INT <<FK>>
+  staff_id : INT <<FK>>
+  base_salary : DECIMAL(10,2)
+  deductions : DECIMAL(10,2)
+  net_pay : DECIMAL(10,2)
+  momo_reference : VARCHAR(100)
+  status : ENUM
 }
 
 ' ===================== RELATIONSHIPS =====================

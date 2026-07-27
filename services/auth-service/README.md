@@ -5,17 +5,21 @@ SmartStock, backed by bcrypt password hashing and JWT session tokens.
 
 ## Storage
 
-Users are persisted in the shared SQLite database at
-`../../database/smartstock.db` (the `users` table from
-`database/schema.sql`, Week 2). `src/db.js` opens that file and applies
-`schema.sql` automatically if the tables don't exist yet; `src/store.js`
-runs plain SQL against it. Routes and middleware are unchanged — they still
-just call `findByEmail()` / `createUser()`.
+Users are persisted in the shared MySQL database defined by
+`database/schema.sql` at the repo root (Week 2) — the `users` table there is
+the same one this service reads and writes via `src/db.js` (a `mysql2`
+connection pool) and `src/store.js` (`findByEmail()` / `createUser()`).
+Routes and middleware are unchanged from Week 1 — they still just call those
+two functions, now async since MySQL is a network call rather than an
+in-process store.
 
-Run `../../database/scripts/init_db.sh` once (from the repo root) before
-starting the service for the first time, so the database file and tables
-exist. Set `DB_PATH` to point at a different file if needed (this is how
-`docker-compose.yml` wires it to the mounted volume).
+`docker compose up --build` from the repo root brings up a `db` (MySQL)
+container that auto-applies `database/schema.sql` and `database/seed.sql` on
+its first boot, and this service via `DB_HOST`/`DB_PORT`/`DB_USER`/
+`DB_PASSWORD`/`DB_NAME` (see `docker-compose.yml`). To reset the database to
+a clean state on demand, run `./database/scripts/init_db.sh` from the repo
+root — see `database/scripts/` for that plus backup/restore/explain-query
+scripts used in the Week 2 evaluation.
 
 ## Run it (one command)
 

@@ -1,39 +1,21 @@
-// Opens the SmartStock SQLite database (database/schema.sql defines the
-// tables). Auth-service reads/writes the `users` table through this
-// connection instead of the old in-memory Map (see store.js).
+// Connection pool for the shared SmartStock MySQL database (see
+// database/schema.sql at the repo root, Week 2). auth-service reads/writes
+// the `users` table through this pool instead of the old in-memory Map
+// (see store.js).
 //
-// DB_PATH can be overridden with an env var (used in docker-compose so the
-// container points at a mounted volume). Locally it defaults to the shared
-// database/smartstock.db at the repo root, three levels up from this file
-// (src -> auth-service -> services -> repo root).
+// All connection details come from env vars, matching the `db` service in
+// the root docker-compose.yml — see .env.example for local (non-Docker) dev.
 
-const path = require('path');
-const fs = require('fs');
-const Database = require('better-sqlite3');
+const mysql = require('mysql2/promise');
 
-const DB_PATH =
-  process.env.DB_PATH || path.resolve(__dirname, '..', '..', '..', 'database', 'smartstock.db');
+const pool = mysql.createPool({
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'dev-only-change-me',
+  database: process.env.DB_NAME || 'smartstock',
+  waitForConnections: true,
+  connectionLimit: 10,
+});
 
-const SCHEMA_PATH = path.join(path.dirname(DB_PATH), 'schema.sql');
-
-// Make sure the directory for the database file exists (first run / fresh
-// docker volume won't have it yet).
-fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-
-const db = new Database(DB_PATH);
-db.pragma('foreign_keys = ON');
-db.pragma('journal_mode = WAL');
-
-// Applying schema.sql is safe to repeat: every statement in it is
-// `CREATE TABLE IF NOT EXISTS` / `CREATE INDEX IF NOT EXISTS`, so this never
-// touches existing data — it only fills in tables on a brand-new database
-// file (e.g. the first time a fresh Docker volume is mounted).
-if (fs.existsSync(SCHEMA_PATH)) {
-  db.exec(fs.readFileSync(SCHEMA_PATH, 'utf8'));
-} else {
-  console.warn(`[db] schema.sql not found at ${SCHEMA_PATH} — assuming the database is already set up`);
-}
-
-console.log(`[db] using SQLite database at ${DB_PATH}`);
-
-module.exports = db;
+module.exports = pool;
