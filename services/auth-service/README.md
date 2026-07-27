@@ -3,6 +3,20 @@
 Registration, login and role-based access control (Admin / Cashier) for
 SmartStock, backed by bcrypt password hashing and JWT session tokens.
 
+## Storage
+
+Users are persisted in the shared SQLite database at
+`../../database/smartstock.db` (the `users` table from
+`database/schema.sql`, Week 2). `src/db.js` opens that file and applies
+`schema.sql` automatically if the tables don't exist yet; `src/store.js`
+runs plain SQL against it. Routes and middleware are unchanged — they still
+just call `findByEmail()` / `createUser()`.
+
+Run `../../database/scripts/init_db.sh` once (from the repo root) before
+starting the service for the first time, so the database file and tables
+exist. Set `DB_PATH` to point at a different file if needed (this is how
+`docker-compose.yml` wires it to the mounted volume).
+
 ## Run it (one command)
 
 From the repository root:
