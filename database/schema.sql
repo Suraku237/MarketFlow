@@ -155,3 +155,10 @@ CREATE INDEX IF NOT EXISTS idx_demand_forecasts_product ON demand_forecasts(prod
 CREATE INDEX IF NOT EXISTS idx_payslips_staff           ON payslips(staff_id);
 -- Note: users.email and products.sku already have an implicit unique index
 -- from their UNIQUE constraints, so no separate CREATE INDEX is needed there.
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    role TEXT DEFAULT 'user',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
