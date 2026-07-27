@@ -14,15 +14,15 @@ diagrams, etc.) is in [`documentation/main.pdf`](documentation/) /
 services/
   auth-service/          Week 1: registration, login, JWT, role-based access
 database/
-  schema.sql              Week 2: combined relational schema (SQLite, all modules)
+  schema.sql              Week 2: combined relational schema (MySQL, all modules)
   seed.sql                 Sample demo data
   scripts/
-    init_db.sh              Create/reset the local SQLite database
-    backup_db.sh             Timestamped backup via SQLite's .backup command
+    env.sh                  Shared config (db service name, credentials) for the scripts below
+    init_db.sh              Reset the database to a clean state from schema.sql + seed.sql
+    backup_db.sh             Timestamped backup via mysqldump
     restore_db.sh            Restore from the latest (or a chosen) backup
-    explain_query.sh         Prove indexes are used (EXPLAIN QUERY PLAN)
+    explain_query.sh         Prove indexes are used (EXPLAIN)
   backups/                 Backup files land here (created at runtime, git-ignored)
-  smartstock.db             The local SQLite database file (created at runtime, git-ignored)
 documentation/
   main.tex / main.pdf                          Week 1-era Software Design Document
   SmartStock_Software_Design_Document.pdf       Same document, exported
@@ -32,50 +32,41 @@ documentation/
     er_diagram.puml                              PlantUML source for the ER diagram
     figures/er_diagram.png                       Rendered ER diagram
 BRANCHING.md              Branch naming convention
-docker-compose.yml         Brings up the auth-service
+docker-compose.yml         Brings up MySQL (`db`) and the auth-service
 ```
 
-## Getting started — backend (auth-service)
-
-`auth-service` now persists users to the shared SQLite database (see
-"Getting started — database" below), so initialize the database first:
+## Getting started — backend + database
 
 ```
-./database/scripts/init_db.sh
 docker compose up --build
 ```
 
-`docker-compose.yml` mounts `./database` into the container so the same
-`smartstock.db` file is used whether you run the service in Docker or with
-`npm start`. Starts the auth service on `http://localhost:3000`. See
-[`services/auth-service/README.md`](services/auth-service/README.md) for
-endpoints and a demo script.
+This one command brings up two containers: `db` (MySQL 8, with
+`database/schema.sql` and `database/seed.sql` applied automatically the
+first time its data volume is created) and `auth-service` on
+`http://localhost:3000`, which waits for MySQL to report healthy before
+starting. See [`services/auth-service/README.md`](services/auth-service/README.md)
+for endpoints and a demo script.
 
 The React frontend lives in a separate repo (`marketflow_frontend`) with its
 own `docker-compose.yml` — run this backend first, then `docker compose up
 --build` there to get the webapp on `http://localhost:5173`. See that repo's
 README for details.
 
-## Getting started — database (Week 2, local SQLite)
+## Working with the database directly (Week 2)
 
-The Week 2 database is developed against **SQLite 3** locally (no server
-process required — the whole database is one file,
-`database/smartstock.db`). The schema is written in plain SQL with only
-SQLite-portable types, so it can later be pointed at MySQL/PostgreSQL for
-production with minimal changes (see `documentation/week2/week2_database_design.pdf`,
-§1.3).
-
-Requires the `sqlite3` CLI (`apt install sqlite3` / `brew install sqlite3`).
+All scripts run from the repo root and talk to the `db` container via
+`docker compose exec` — no local MySQL client install needed.
 
 ```bash
-# 1. Create the database from schema.sql and load sample data from seed.sql
+# Reset the database to a clean, known state (drops + recreates it from
+# schema.sql + seed.sql)
 ./database/scripts/init_db.sh
 
-# 2. Open it directly if you want to poke around
-sqlite3 database/smartstock.db
-sqlite> .tables
-sqlite> .schema products
-sqlite> SELECT * FROM products;
+# Open a shell inside the database directly if you want to poke around
+docker compose exec db mysql -uroot -pdev-only-change-me smartstock
+mysql> SHOW TABLES;
+mysql> SELECT * FROM products;
 ```
 
 ### Proving the indexes work
@@ -84,8 +75,9 @@ sqlite> SELECT * FROM products;
 ./database/scripts/explain_query.sh
 ```
 
-Look for `SEARCH ... USING INDEX idx_...` in the output (rather than `SCAN`)
-— that confirms SQLite used the index instead of scanning the whole table.
+Look at the `key` column in MySQL's `EXPLAIN` output — a populated key (e.g.
+`idx_products_name`) with `type` `ref`/`range` means the index was used;
+`type: ALL` with `key: NULL` would mean a full table scan.
 
 ### Backup and restore (Week 2 evaluation)
 
@@ -94,7 +86,7 @@ Look for `SEARCH ... USING INDEX idx_...` in the output (rather than `SCAN`)
 ./database/scripts/backup_db.sh
 
 # Simulate data loss
-sqlite3 database/smartstock.db "DELETE FROM products;"
+docker compose exec db mysql -uroot -pdev-only-change-me smartstock -e "DELETE FROM products;"
 
 # Restore from the most recent backup
 ./database/scripts/restore_db.sh

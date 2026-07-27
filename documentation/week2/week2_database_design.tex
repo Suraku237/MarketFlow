@@ -108,7 +108,7 @@
 \textbf{Document version:} & 1.0 \\[4pt]
 \textbf{Group number:} & Group 2 \\[4pt]
 \textbf{Date:} & \today \\[4pt]
-\textbf{Database engine (local dev):} & SQLite 3 \\
+\textbf{Database engine:} & MySQL 8 \\
 \end{tabular}
 
 \vspace{1cm}
@@ -161,14 +161,13 @@ role as the exam template's Academic / Finance / HR split:
   authentication service), payroll runs, and individual payslips.
 \end{itemize}
 
-\section{Local Development Database}
-For local development and grading, the schema targets \textbf{SQLite 3} (a
-single portable file, no server process required). The schema uses only
-SQLite-compatible types and \texttt{CHECK} constraints in place of native
-\texttt{ENUM} types, so it can be ported to MySQL or PostgreSQL later by
-mapping \texttt{INTEGER PRIMARY KEY AUTOINCREMENT} to
-\texttt{SERIAL}/\texttt{AUTO\_INCREMENT} and \texttt{TEXT} timestamps to
-\texttt{DATETIME}/\texttt{TIMESTAMP}, without changing the logical design.
+\section{Database Engine}
+The schema targets \textbf{MySQL 8}, run as a Docker container (service
+\texttt{db} in the repository's \texttt{docker-compose.yml}) alongside the
+Week 1 authentication service. Fixed value-sets (\texttt{role},
+\texttt{status}, \texttt{movement\_type}, \texttt{method}) use native
+\texttt{ENUM} types; currency columns use \texttt{DECIMAL(10,2)} rather than
+a floating-point type, to avoid rounding error on monetary values.
 
 % ================= CHAPTER 2: ER DIAGRAM =================
 \chapter{Entity-Relationship Diagram}
@@ -227,8 +226,8 @@ duplicated elsewhere as a mutable copy.
 \begin{center}
 \begin{tabular}{@{}p{3.4cm}p{2.6cm}p{7.5cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-name & TEXT & NOT NULL, UNIQUE \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+name & VARCHAR(100) & NOT NULL, UNIQUE \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -237,12 +236,12 @@ name & TEXT & NOT NULL, UNIQUE \\
 \begin{center}
 \begin{tabular}{@{}p{3.4cm}p{2.6cm}p{7.5cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-name & TEXT & NOT NULL \\
-contact\_email & TEXT & \\
-contact\_phone & TEXT & \\
-address & TEXT & \\
-created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+name & VARCHAR(255) & NOT NULL \\
+contact\_email & VARCHAR(255) & \\
+contact\_phone & VARCHAR(50) & \\
+address & VARCHAR(255) & \\
+created\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -251,16 +250,16 @@ created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-sku & TEXT & NOT NULL, UNIQUE \\
-name & TEXT & NOT NULL \\
-category\_id & INTEGER & NOT NULL, FK $\rightarrow$ categories(id) \\
-supplier\_id & INTEGER & FK $\rightarrow$ suppliers(id), nullable \\
-unit\_price & REAL & NOT NULL, CHECK $\geq 0$ \\
-quantity\_in\_stock & INTEGER & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
-reorder\_level & INTEGER & NOT NULL, DEFAULT 10 \\
-created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
-updated\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+sku & VARCHAR(50) & NOT NULL, UNIQUE \\
+name & VARCHAR(255) & NOT NULL \\
+category\_id & INT & NOT NULL, FK $\rightarrow$ categories(id) \\
+supplier\_id & INT & FK $\rightarrow$ suppliers(id), nullable \\
+unit\_price & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ \\
+quantity\_in\_stock & INT & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
+reorder\_level & INT & NOT NULL, DEFAULT 10 \\
+created\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
+updated\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP ON UPDATE CURRENT\_TIMESTAMP \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -269,13 +268,13 @@ updated\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-product\_id & INTEGER & NOT NULL, FK $\rightarrow$ products(id) \\
-change\_qty & INTEGER & NOT NULL (signed: positive = in, negative = out) \\
-movement\_type & TEXT & NOT NULL, CHECK IN ('RECEIPT','SALE','ADJUSTMENT','RETURN') \\
-reference & TEXT & e.g. purchase order or sale ID \\
-created\_by & INTEGER & FK $\rightarrow$ users(id), nullable \\
-created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+product\_id & INT & NOT NULL, FK $\rightarrow$ products(id) \\
+change\_qty & INT & NOT NULL (signed: positive = in, negative = out) \\
+movement\_type & ENUM & NOT NULL, ('RECEIPT','SALE','ADJUSTMENT','RETURN') \\
+reference & VARCHAR(100) & e.g. purchase order or sale ID \\
+created\_by & INT & FK $\rightarrow$ users(id), nullable \\
+created\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -286,11 +285,11 @@ created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-cashier\_id & INTEGER & NOT NULL, FK $\rightarrow$ users(id) \\
-sale\_date & TEXT & NOT NULL, DEFAULT datetime('now') \\
-total\_amount & REAL & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
-status & TEXT & NOT NULL, DEFAULT 'pending', CHECK IN ('pending','paid','cancelled') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+cashier\_id & INT & NOT NULL, FK $\rightarrow$ users(id) \\
+sale\_date & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
+total\_amount & DECIMAL(10,2) & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
+status & ENUM & NOT NULL, DEFAULT 'pending', ('pending','paid','cancelled') \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -299,12 +298,12 @@ status & TEXT & NOT NULL, DEFAULT 'pending', CHECK IN ('pending','paid','cancell
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-sale\_id & INTEGER & NOT NULL, FK $\rightarrow$ sales(id) \\
-product\_id & INTEGER & NOT NULL, FK $\rightarrow$ products(id) \\
-quantity & INTEGER & NOT NULL, CHECK $> 0$ \\
-unit\_price & REAL & NOT NULL, CHECK $\geq 0$ (price snapshot at sale time) \\
-subtotal & REAL & NOT NULL, CHECK $\geq 0$ \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+sale\_id & INT & NOT NULL, FK $\rightarrow$ sales(id) \\
+product\_id & INT & NOT NULL, FK $\rightarrow$ products(id) \\
+quantity & INT & NOT NULL, CHECK $> 0$ \\
+unit\_price & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ (price snapshot at sale time) \\
+subtotal & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -321,13 +320,13 @@ make past receipts incorrect whenever a price changes.
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-sale\_id & INTEGER & NOT NULL, UNIQUE, FK $\rightarrow$ sales(id) (1:1) \\
-momo\_reference & TEXT & mobile money gateway reference \\
-amount & REAL & NOT NULL, CHECK $\geq 0$ \\
-method & TEXT & NOT NULL, DEFAULT 'momo', CHECK IN ('momo','cash','card') \\
-status & TEXT & NOT NULL, DEFAULT 'pending', CHECK IN ('pending','approved','declined') \\
-paid\_at & TEXT & nullable \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+sale\_id & INT & NOT NULL, UNIQUE, FK $\rightarrow$ sales(id) (1:1) \\
+momo\_reference & VARCHAR(100) & mobile money gateway reference \\
+amount & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ \\
+method & ENUM & NOT NULL, DEFAULT 'momo', ('momo','cash','card') \\
+status & ENUM & NOT NULL, DEFAULT 'pending', ('pending','approved','declined') \\
+paid\_at & DATETIME & nullable \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -336,12 +335,12 @@ paid\_at & TEXT & nullable \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-product\_id & INTEGER & NOT NULL, FK $\rightarrow$ products(id) \\
-forecast\_date & TEXT & NOT NULL \\
-predicted\_quantity & INTEGER & NOT NULL, CHECK $\geq 0$ \\
-model\_version & TEXT & NOT NULL, DEFAULT 'v1' \\
-created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+product\_id & INT & NOT NULL, FK $\rightarrow$ products(id) \\
+forecast\_date & DATE & NOT NULL \\
+predicted\_quantity & INT & NOT NULL, CHECK $\geq 0$ \\
+model\_version & VARCHAR(20) & NOT NULL, DEFAULT 'v1' \\
+created\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -352,12 +351,12 @@ created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-name & TEXT & NOT NULL \\
-email & TEXT & NOT NULL, UNIQUE \\
-password\_hash & TEXT & NOT NULL (bcrypt hash, from Week 1 auth-service) \\
-role & TEXT & NOT NULL, CHECK IN ('admin','cashier') \\
-created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+name & VARCHAR(255) & NOT NULL \\
+email & VARCHAR(255) & NOT NULL, UNIQUE \\
+password\_hash & VARCHAR(255) & NOT NULL (bcrypt hash, from Week 1 auth-service) \\
+role & ENUM & NOT NULL, ('admin','cashier') \\
+created\_at & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -366,12 +365,12 @@ created\_at & TEXT & NOT NULL, DEFAULT datetime('now') \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-period\_start & TEXT & NOT NULL \\
-period\_end & TEXT & NOT NULL \\
-run\_date & TEXT & NOT NULL, DEFAULT datetime('now') \\
-status & TEXT & NOT NULL, DEFAULT 'draft', CHECK IN ('draft','processed','paid') \\
-created\_by & INTEGER & FK $\rightarrow$ users(id), nullable \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+period\_start & DATE & NOT NULL \\
+period\_end & DATE & NOT NULL \\
+run\_date & DATETIME & NOT NULL, DEFAULT CURRENT\_TIMESTAMP \\
+status & ENUM & NOT NULL, DEFAULT 'draft', ('draft','processed','paid') \\
+created\_by & INT & FK $\rightarrow$ users(id), nullable \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -380,14 +379,14 @@ created\_by & INTEGER & FK $\rightarrow$ users(id), nullable \\
 \begin{center}
 \begin{tabular}{@{}p{3.6cm}p{2.6cm}p{7.3cm}@{}}
 \schemahead
-id & INTEGER & PRIMARY KEY AUTOINCREMENT \\
-payroll\_run\_id & INTEGER & NOT NULL, FK $\rightarrow$ payroll\_runs(id) \\
-staff\_id & INTEGER & NOT NULL, FK $\rightarrow$ users(id) \\
-base\_salary & REAL & NOT NULL, CHECK $\geq 0$ \\
-deductions & REAL & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
-net\_pay & REAL & NOT NULL, CHECK $\geq 0$ \\
-momo\_reference & TEXT & payout reference \\
-status & TEXT & NOT NULL, DEFAULT 'pending', CHECK IN ('pending','paid') \\
+id & INT & PRIMARY KEY AUTO\_INCREMENT \\
+payroll\_run\_id & INT & NOT NULL, FK $\rightarrow$ payroll\_runs(id) \\
+staff\_id & INT & NOT NULL, FK $\rightarrow$ users(id) \\
+base\_salary & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ \\
+deductions & DECIMAL(10,2) & NOT NULL, DEFAULT 0, CHECK $\geq 0$ \\
+net\_pay & DECIMAL(10,2) & NOT NULL, CHECK $\geq 0$ \\
+momo\_reference & VARCHAR(100) & payout reference \\
+status & ENUM & NOT NULL, DEFAULT 'pending', ('pending','paid') \\
 \multicolumn{3}{@{}l}{UNIQUE(payroll\_run\_id, staff\_id) -- one payslip per staff member per run} \\
 \bottomrule
 \end{tabular}
@@ -445,35 +444,39 @@ free index from their \texttt{UNIQUE} constraints.
 \end{infobox}
 
 \section{Proving Index Usage Live}
-Run \texttt{database/scripts/explain\_query.sh} to print SQLite's query plan
-for two sample queries. A plan line reading
-\texttt{SEARCH products USING INDEX idx\_products\_name (name=?)} (rather
-than \texttt{SCAN products}) confirms the index was used instead of a full
-table scan.
+Run \texttt{database/scripts/explain\_query.sh} to print MySQL's
+\texttt{EXPLAIN} output for two sample queries. The \texttt{key} column
+names the index MySQL's optimizer actually chose (e.g.
+\texttt{idx\_products\_name}), and \texttt{type} shows the access method
+(\texttt{ref}/\texttt{range} meaning an index was used, versus \texttt{ALL}
+with \texttt{key: NULL}, which would mean a full table scan).
 
 % ================= CHAPTER 6: BACKUP & RESTORE =================
 \chapter{Backup and Restore Procedure}
 
 \section{Approach}
-SQLite's own \texttt{.backup} command is used rather than a plain file copy,
-because it produces a consistent snapshot even if a connection is open, and
-\texttt{.restore} reloads it in place. Three scripts under
-\texttt{database/scripts/} automate this for the live evaluation:
+\texttt{mysqldump} is used to take a logical, consistent backup (a plain SQL
+file of \texttt{DROP TABLE}/\texttt{CREATE TABLE}/\texttt{INSERT}
+statements), and \texttt{mysql} reloads it. Four scripts under
+\texttt{database/scripts/}, run via \texttt{docker compose exec} against the
+\texttt{db} container, automate this for the live evaluation:
 
 \begin{enumerate}[leftmargin=1.4em]
-  \item \texttt{init\_db.sh} -- creates \texttt{smartstock.db} from
-  \texttt{schema.sql} and loads \texttt{seed.sql}.
-  \item \texttt{backup\_db.sh} -- writes a timestamped copy to
+  \item \texttt{init\_db.sh} -- drops and recreates the \texttt{smartstock}
+  database from \texttt{schema.sql} and loads \texttt{seed.sql}.
+  \item \texttt{backup\_db.sh} -- writes a timestamped \texttt{mysqldump} to
   \texttt{database/backups/}.
   \item \texttt{restore\_db.sh} -- restores from the most recent backup (or
   one given explicitly) and prints row counts per table as proof.
+  \item \texttt{explain\_query.sh} -- runs the two sample queries above
+  through \texttt{EXPLAIN}.
 \end{enumerate}
 
 \section{Demonstration Sequence (used in the evaluation)}
 \begin{enumerate}[leftmargin=1.4em]
   \item \texttt{./database/scripts/init\_db.sh} -- fresh database with seed data.
   \item \texttt{./database/scripts/backup\_db.sh} -- creates a backup file.
-  \item Delete data on purpose, e.g.\ \texttt{sqlite3 database/smartstock.db "DELETE FROM products;"}
+  \item Delete data on purpose, e.g.\ \texttt{docker compose exec db mysql -uroot -p... smartstock -e "DELETE FROM products;"}
   \item \texttt{./database/scripts/restore\_db.sh} -- restores from the backup.
   \item Confirm row counts are back to their original values (printed
   automatically by the script).

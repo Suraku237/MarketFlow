@@ -30,12 +30,20 @@ router.post('/register', async (req, res) => {
   if (!ROLES.includes(finalRole)) {
     return res.status(400).json({ error: `role must be one of: ${ROLES.join(', ')}` });
   }
-  if (findByEmail(email)) {
+  if (await findByEmail(email)) {
     return res.status(409).json({ error: 'a user with this email already exists' });
   }
 
   const passwordHash = await hashPassword(password);
-  const user = createUser({ name, email, passwordHash, role: finalRole });
+  let user;
+  try {
+    user = await createUser({ name, email, passwordHash, role: finalRole });
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.status(409).json({ error: 'a user with this email already exists' });
+    }
+    throw err;
+  }
 
   return res.status(201).json({ user: toPublicUser(user) });
 });
@@ -47,7 +55,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'email and password are required' });
   }
 
-  const user = findByEmail(email);
+  const user = await findByEmail(email);
   const passwordMatches = user ? await verifyPassword(password, user.passwordHash) : false;
 
   if (!user || !passwordMatches) {
