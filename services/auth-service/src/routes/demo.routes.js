@@ -9,6 +9,7 @@ const router = Router();
 
 router.get('/reports', authenticate, authorize('admin', 'cashier'), (req, res) => {
   res.json({
+    service: 'auth-service',
     message: `Sales report visible to ${req.user.role}`,
     requestedBy: req.user.email,
   });

@@ -29,13 +29,19 @@ From the repository root:
 docker compose up --build
 ```
 
-The service starts on `http://localhost:3000` with a working `JWT_SECRET`
-already set (see `docker-compose.yml`). No `.env` file needed for a demo.
+**Week 3 change:** this service is no longer published to the host — the
+[API Gateway](../gateway/README.md) is now the only public entry point.
+Reach these endpoints at `http://localhost:8081/api/v1/auth/...` and
+`http://localhost:8081/api/v1/reports` instead of `localhost:3000` directly;
+see the Gateway's README for the full routing table. The examples below
+still show this service's own native paths (`/api/auth/...`), which is what
+the Gateway rewrites requests to internally.
 
-Alternatively, from this directory:
+To run just this service standalone (e.g. for local development against a
+locally installed MySQL instead of Docker):
 
 ```
-docker build -t smartstock-auth . && docker run -p 3000:3000 smartstock-auth
+docker build -t smartstock-auth . && docker run -p 3000:3000 --env-file .env smartstock-auth
 ```
 
 ## Running locally without Docker
@@ -58,29 +64,32 @@ npm start
 
 ## Demo script
 
+All requests go through the Gateway on port `8081` now, not this service's
+port `3000` directly.
+
 ```bash
 # Register an admin
-curl -s -X POST localhost:3000/api/auth/register \
+curl -s -X POST localhost:8081/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"Ada Admin","email":"admin@smartstock.test","password":"adminpass123","role":"admin"}'
 
 # Register a cashier
-curl -s -X POST localhost:3000/api/auth/register \
+curl -s -X POST localhost:8081/api/v1/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"Cara Cashier","email":"cashier@smartstock.test","password":"cashierpass123","role":"cashier"}'
 
 # Log in as each and grab the token
-ADMIN_TOKEN=$(curl -s -X POST localhost:3000/api/auth/login \
+ADMIN_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@smartstock.test","password":"adminpass123"}' | jq -r .token)
 
-CASHIER_TOKEN=$(curl -s -X POST localhost:3000/api/auth/login \
+CASHIER_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"cashier@smartstock.test","password":"cashierpass123"}' | jq -r .token)
 
 # Both can currently see the reports endpoint
-curl -s localhost:3000/api/reports -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -s localhost:3000/api/reports -H "Authorization: Bearer $CASHIER_TOKEN"
+curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $ADMIN_TOKEN"
+curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $CASHIER_TOKEN"
 ```
 
 ## Live rule change (for the examiner)
@@ -98,9 +107,9 @@ to:
 router.get('/reports', authenticate, authorize('admin'), ...)
 ```
 
-Restart the process (or `docker compose restart`) and re-run the two `curl`
-calls above — the cashier token now gets `403 Forbidden`, the admin token
-still works.
+Restart the process (`docker compose restart auth-service`) and re-run the
+two `curl` calls above (still through the Gateway on port `8081`) — the
+cashier token now gets `403 Forbidden`, the admin token still works.
 
 ## How the security works (for the oral explanation)
 
@@ -120,3 +129,9 @@ still works.
   back in the `Authorization: Bearer <token>` header; `authenticate`
   middleware verifies the signature and expiry, and `authorize(...roles)`
   checks the role claim before letting the request through.
+- **Week 3**: the [Gateway](../gateway/README.md) now does its own first-pass
+  check — it verifies the same JWT (shared secret) before forwarding
+  anything here at all, so an invalid/missing token never even reaches this
+  service. This service's own `authenticate`/`authorize` still run too
+  (defense in depth) — the Gateway confirms "logged in", this service still
+  decides "allowed to do this specific thing".

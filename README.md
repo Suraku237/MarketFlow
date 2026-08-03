@@ -13,6 +13,8 @@ diagrams, etc.) is in [`documentation/main.pdf`](documentation/) /
 ```
 services/
   auth-service/          Week 1: registration, login, JWT, role-based access
+  inventory-service/     Week 3 module service: product catalog
+  gateway/                Week 3: API Gateway — single entry point, routing, JWT check, rate limit
 database/
   schema.sql              Week 2: combined relational schema (MySQL, all modules)
   seed.sql                 Sample demo data
@@ -32,7 +34,7 @@ documentation/
     er_diagram.puml                              PlantUML source for the ER diagram
     figures/er_diagram.png                       Rendered ER diagram
 BRANCHING.md              Branch naming convention
-docker-compose.yml         Brings up MySQL (`db`) and the auth-service
+docker-compose.yml         Brings up MySQL, auth-service, inventory-service and the Gateway
 ```
 
 ## Getting started — backend + database
@@ -41,17 +43,35 @@ docker-compose.yml         Brings up MySQL (`db`) and the auth-service
 docker compose up --build
 ```
 
-This one command brings up two containers: `db` (MySQL 8, with
+This one command brings up four containers: `db` (MySQL 8, with
 `database/schema.sql` and `database/seed.sql` applied automatically the
-first time its data volume is created) and `auth-service` on
-`http://localhost:3000`, which waits for MySQL to report healthy before
-starting. See [`services/auth-service/README.md`](services/auth-service/README.md)
-for endpoints and a demo script.
+first time its data volume is created), `auth-service`, `inventory-service`,
+and the `gateway`. **Only the Gateway is published to your machine** — at
+`http://localhost:8081` — the other three are internal-only, reachable from
+each other over the Docker network but not from your host directly. See
+[`services/gateway/README.md`](services/gateway/README.md) for the full
+routing table, and [`services/auth-service/README.md`](services/auth-service/README.md) /
+[`services/inventory-service/README.md`](services/inventory-service/README.md)
+for what each service does on its own.
 
 The React frontend lives in a separate repo (`marketflow_frontend`) with its
 own `docker-compose.yml` — run this backend first, then `docker compose up
---build` there to get the webapp on `http://localhost:5173`. See that repo's
-README for details.
+--build` there to get the webapp on `http://localhost:5173`, pointed at the
+Gateway. See that repo's README for details.
+
+## Week 3: microservices behind an API Gateway
+
+```
+curl http://localhost:8081/docs           # combined Swagger UI for every endpoint
+curl http://localhost:8081/api/v1/reports -H "Authorization: Bearer $TOKEN"   # -> auth-service
+curl http://localhost:8081/api/v1/products -H "Authorization: Bearer $TOKEN"  # -> inventory-service
+```
+
+Both routes above go through the same Gateway on the same port; the
+`service` field in each JSON response shows which backend actually handled
+it. See [`services/gateway/README.md`](services/gateway/README.md) for the
+routing table, how the Gateway checks a request is authenticated before
+forwarding it, and the rate-limit demo (10 requests/minute, 11th gets `429`).
 
 ## Working with the database directly (Week 2)
 

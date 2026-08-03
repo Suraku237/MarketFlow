@@ -6,7 +6,7 @@ services:
       MYSQL_DATABASE: smartstock
     ports:
       # Host-side 3307 avoids clashing with a locally installed MySQL on
-      # 3306; auth-service still reaches this container over the internal
+      # 3306; the app services still reach this container over the internal
       # Docker network at db:3306 regardless of this mapping.
       - "3307:3306"
     volumes:
@@ -22,10 +22,10 @@ services:
       timeout: 5s
       retries: 10
 
+  # Week 3: not published to the host — the Gateway is the only front door.
+  # Reachable from other containers at auth-service:3000.
   auth-service:
     build: ./services/auth-service
-    ports:
-      - "3000:3000"
     environment:
       PORT: 3000
       JWT_SECRET: dev-only-change-me
@@ -38,6 +38,41 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  # Week 3 module service (product catalog). Also not published to the host —
+  # only reachable via the Gateway at inventory-service:4000.
+  inventory-service:
+    build: ./services/inventory-service
+    environment:
+      PORT: 4000
+      JWT_SECRET: dev-only-change-me
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: dev-only-change-me
+      DB_NAME: smartstock
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Week 3: the only service published to the host. All external traffic —
+  # browser, curl, Postman — goes through here first.
+  gateway:
+    build: ./services/gateway
+    ports:
+      # Host-side 8081 avoids clashing with another local process already
+      # using 8080; the gateway still listens on 8080 inside its container.
+      - "8081:8080"
+    environment:
+      PORT: 8080
+      JWT_SECRET: dev-only-change-me
+      AUTH_SERVICE_URL: http://auth-service:3000
+      INVENTORY_SERVICE_URL: http://inventory-service:4000
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 10
+    depends_on:
+      - auth-service
+      - inventory-service
 
 volumes:
   db_data:

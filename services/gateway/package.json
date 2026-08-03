@@ -1,0 +1,21 @@
+{
+  "name": "smartstock-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway for SmartStock: single entry point, routes to auth-service and inventory-service, JWT check + rate limiting (Week 3)",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.1",
+    "http-proxy-middleware": "^3.0.3",
+    "js-yaml": "^4.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
