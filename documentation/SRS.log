@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.15)  10 AUG 2026 15:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (MiKTeX 26.5) (preloaded format=pdflatex 2026.5.15)  10 AUG 2026 15:28
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -348,7 +348,7 @@ LaTeX Font Info:    External font `cmex10' loaded for size
 pdfTeX warning (ext4): destination with the same identifier (name{page.1}) has been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.68 \newpage
+l.70 \newpage
               [1] (SRS.toc [2
 
 ])
@@ -358,12 +358,12 @@ l.68 \newpage
  [3]
 Chapter 1.
 
-Overfull \hbox (3.07701pt too wide) in paragraph at lines 84--85
+Overfull \hbox (3.07701pt too wide) in paragraph at lines 86--87
 []\OT1/cmr/bx/n/10.95 Payment pro-cess-ing \OT1/cmr/m/n/10.95 -- ac-cept-ing cus-tomer pay-ments and dis-burs-ing staff pay-outs through
  []
 
 
-Overfull \hbox (18.55836pt too wide) in paragraph at lines 88--89
+Overfull \hbox (18.55836pt too wide) in paragraph at lines 90--91
 []\OT1/cmr/m/n/10.95 The sys-tem does \OT1/cmr/m/it/10.95 not \OT1/cmr/m/n/10.95 cover: phys-i-cal point-of-sale hard-ware drivers, tax-authority fil-ing/reporting
  []
 
@@ -373,12 +373,12 @@ ignored: Infinite glue shrinkage found in box being split [4
 ] [5]
 Chapter 2.
 
-Overfull \hbox (15.33273pt too wide) in paragraph at lines 129--130
+Overfull \hbox (15.33273pt too wide) in paragraph at lines 131--132
 []\OT1/cmr/m/n/10.95 Let Man-agers/Admins man-age in-ven-tory, sup-pli-ers, staff records, pay-roll, and view sales/stock
  []
 
 
-Overfull \hbox (2.89986pt too wide) in paragraph at lines 143--143
+Overfull \hbox (2.89986pt too wide) in paragraph at lines 145--145
 []|\OT1/cmr/m/n/10.95 Manager/Admin|  
  []
 
@@ -396,7 +396,7 @@ Chapter 4.
 ]
 Chapter 5.
 
-Overfull \hbox (27.24692pt too wide) in paragraph at lines 379--379
+Overfull \hbox (27.24692pt too wide) in paragraph at lines 381--381
 []|\OT1/cmr/m/n/10.95 MobileMoneyPayment|  
  []
 
@@ -423,7 +423,7 @@ Here is how much of TeX's memory you used:
  1141 hyphenation exceptions out of 8191
  75i,12n,79p,764b,578s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <C:\Users\kynm\AppData\Local\MiKTeX\fonts/pk/ljfour/jknappen/ec/dpi600\tcrm1095.pk><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmbx12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmr12.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmti10.pfb><C:/Program Files/MiKTeX/fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on SRS.pdf (15 pages, 162129 bytes).
+Output written on SRS.pdf (15 pages, 162195 bytes).
 PDF statistics:
  347 PDF objects out of 1000 (max. 8388607)
  77 named destinations out of 1000 (max. 500000)
