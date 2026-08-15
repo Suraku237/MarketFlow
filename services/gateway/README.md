@@ -2,8 +2,8 @@
 
 Single entry point for the whole system (Week 3). External clients — the
 frontend, curl, Postman, the examiner — only ever talk to the Gateway.
-`auth-service` and `academic-service` have no port published to the host at
-all; the only way to reach them is through here.
+`auth-service`, `academic-service` and `finance-service` have no port
+published to the host at all; the only way to reach them is through here.
 
 ## Routing table
 
@@ -16,6 +16,7 @@ all; the only way to reach them is through here.
 | `GET /api/v1/courses`, `POST /api/v1/courses` | `academic-service` `/api/courses` | Yes (POST: Admin only) |
 | `GET /api/v1/enrollments`, `POST /api/v1/enrollments` | `academic-service` `/api/enrollments` | Yes (POST: Admin or Student) |
 | `GET /api/v1/grades`, `POST /api/v1/grades` | `academic-service` `/api/grades` | Yes (POST: Admin or Teacher) |
+| `GET /api/v1/finance/invoices` | `finance-service` `/api/invoices` | Yes |
 
 Routing is done with `http-proxy-middleware` in [`src/proxy.js`](src/proxy.js) —
 each downstream service gets one proxy instance with a `pathRewrite` rule;
@@ -65,9 +66,9 @@ From the repo root:
 docker compose up --build
 ```
 
-Brings up `db`, `auth-service`, `academic-service` and this Gateway
-together; only the Gateway's port (`8081` on the host, `8080` inside its
-container) is published to your machine.
+Brings up `db`, `rabbitmq`, `auth-service`, `academic-service`,
+`finance-service` and this Gateway together; only the Gateway's port (`8081`
+on the host, `8080` inside its container) is published to your machine.
 
 ## Demo script
 

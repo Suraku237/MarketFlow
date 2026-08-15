@@ -108,8 +108,11 @@ services:
       AUTH_SERVICE_URL: http://auth-service:3000
       ACADEMIC_SERVICE_URL: http://academic-service:4000
       FINANCE_SERVICE_URL: http://finance-service:4001
-      RATE_LIMIT_WINDOW_MS: 60000
-      RATE_LIMIT_MAX: 10
+      # Overridable for the k6 load-test "speed profile" — see
+      # load-testing/README.md — without editing this file:
+      #   RATE_LIMIT_MAX=100000 docker compose up -d gateway
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-60000}
+      RATE_LIMIT_MAX: ${RATE_LIMIT_MAX:-10}
     depends_on:
       - auth-service
       - academic-service

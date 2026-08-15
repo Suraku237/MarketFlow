@@ -3,7 +3,7 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const { limiter } = require('./middleware/rateLimit');
 const { requireAuth } = require('./middleware/auth');
-const { toAuthService, toAcademicService } = require('./proxy');
+const { toAuthService, toAcademicService, toFinanceService } = require('./proxy');
 const { loadCombinedSpec } = require('./docs');
 
 function createApp() {
@@ -30,6 +30,7 @@ function createApp() {
       'POST /api/v1/enrollments    -> academic-service (JWT required, Admin or Student)',
       'GET  /api/v1/grades         -> academic-service (JWT required)',
       'POST /api/v1/grades         -> academic-service (JWT required, Admin or Teacher)',
+      'GET  /api/v1/finance/invoices -> finance-service (JWT required)',
     ],
     docs: '/docs',
   }));
@@ -48,6 +49,7 @@ function createApp() {
   app.use('/api/v1/courses', requireAuth, toAcademicService);
   app.use('/api/v1/enrollments', requireAuth, toAcademicService);
   app.use('/api/v1/grades', requireAuth, toAcademicService);
+  app.use('/api/v1/finance', requireAuth, toFinanceService);
 
   app.use((req, res) => res.status(404).json({ error: 'not found' }));
 

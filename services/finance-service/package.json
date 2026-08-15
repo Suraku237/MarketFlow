@@ -1,0 +1,19 @@
+{
+  "name": "smartschool-finance-service",
+  "version": "1.0.0",
+  "description": "Finance module service for SmartSchool (invoices) — Week 4: consumes 'enrollment.created' from RabbitMQ to create invoices asynchronously",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "license": "UNLICENSED",
+  "dependencies": {
+    "amqplib": "^0.10.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.11.5"
+  }
+}

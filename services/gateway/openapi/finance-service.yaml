@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: SmartSchool Finance Service
+  version: "1.0.0"
+  description: >
+    Invoices, created automatically when academic-service publishes an
+    "enrollment.created" event to RabbitMQ (Week 4). Reached only through
+    the API Gateway — finance-service has no port published directly to
+    the host.
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Via the API Gateway
+tags:
+  - name: finance
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Invoice:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        student_id: { type: integer, example: 1 }
+        enrollment_id: { type: integer, example: 1 }
+        amount: { type: string, example: "25000.00" }
+        momo_reference: { type: string, nullable: true }
+        method: { type: string, enum: [momo, cash, card], example: "momo" }
+        status: { type: string, enum: [pending, paid, cancelled], example: "pending" }
+        issued_at: { type: string, format: date-time }
+        paid_at: { type: string, format: date-time, nullable: true }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+security:
+  - bearerAuth: []
+paths:
+  /finance/invoices:
+    get:
+      tags: [finance]
+      summary: List invoices (a Student only ever sees their own)
+      parameters:
+        - name: studentId
+          in: query
+          schema: { type: integer }
+          description: Admin/Teacher only — filter by student
+      responses:
+        "200":
+          description: Invoice list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string, example: "finance-service" }
+                  invoices:
+                    type: array
+                    items: { $ref: "#/components/schemas/Invoice" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }

@@ -6,13 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 
+const SPEC_FILES = ['auth-service.yaml', 'academic-service.yaml', 'finance-service.yaml'];
+
 function loadSpec(filename) {
   return yaml.load(fs.readFileSync(path.join(__dirname, '..', 'openapi', filename), 'utf8'));
 }
 
 function loadCombinedSpec() {
-  const authSpec = loadSpec('auth-service.yaml');
-  const academicSpec = loadSpec('academic-service.yaml');
+  const specs = SPEC_FILES.map(loadSpec);
 
   return {
     openapi: '3.0.3',
@@ -21,18 +22,12 @@ function loadCombinedSpec() {
       version: '1.0.0',
       description: 'Combined documentation for every endpoint reachable through the SmartSchool API Gateway.',
     },
-    servers: authSpec.servers,
-    tags: [...(authSpec.tags || []), ...(academicSpec.tags || [])],
-    paths: { ...authSpec.paths, ...academicSpec.paths },
+    servers: specs[0].servers,
+    tags: specs.flatMap((spec) => spec.tags || []),
+    paths: Object.assign({}, ...specs.map((spec) => spec.paths || {})),
     components: {
-      securitySchemes: {
-        ...(authSpec.components?.securitySchemes || {}),
-        ...(academicSpec.components?.securitySchemes || {}),
-      },
-      schemas: {
-        ...(authSpec.components?.schemas || {}),
-        ...(academicSpec.components?.schemas || {}),
-      },
+      securitySchemes: Object.assign({}, ...specs.map((spec) => spec.components?.securitySchemes || {})),
+      schemas: Object.assign({}, ...specs.map((spec) => spec.components?.schemas || {})),
     },
   };
 }
