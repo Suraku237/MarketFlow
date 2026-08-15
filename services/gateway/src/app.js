@@ -3,7 +3,7 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const { limiter } = require('./middleware/rateLimit');
 const { requireAuth } = require('./middleware/auth');
-const { toAuthService, toInventoryService } = require('./proxy');
+const { toAuthService, toAcademicService } = require('./proxy');
 const { loadCombinedSpec } = require('./docs');
 
 function createApp() {
@@ -18,15 +18,18 @@ function createApp() {
   app.get('/health', (req, res) => res.json({ status: 'ok', service: 'gateway' }));
 
   app.get('/', (req, res) => res.json({
-    service: 'smartstock-gateway',
+    service: 'smartschool-gateway',
     routes: [
       'POST /api/v1/auth/register  -> auth-service',
       'POST /api/v1/auth/login     -> auth-service',
       'GET  /api/v1/auth/me        -> auth-service (JWT required)',
       'GET  /api/v1/reports        -> auth-service (JWT required)',
-      'GET  /api/v1/products       -> inventory-service (JWT required)',
-      'GET  /api/v1/products/:id   -> inventory-service (JWT required)',
-      'POST /api/v1/products       -> inventory-service (JWT required, Admin only)',
+      'GET  /api/v1/courses        -> academic-service (JWT required)',
+      'POST /api/v1/courses        -> academic-service (JWT required, Admin only)',
+      'GET  /api/v1/enrollments    -> academic-service (JWT required)',
+      'POST /api/v1/enrollments    -> academic-service (JWT required, Admin or Student)',
+      'GET  /api/v1/grades         -> academic-service (JWT required)',
+      'POST /api/v1/grades         -> academic-service (JWT required, Admin or Teacher)',
     ],
     docs: '/docs',
   }));
@@ -42,7 +45,9 @@ function createApp() {
   // owns the resource; the Gateway only confirms "is logged in".
   app.use('/api/v1/auth/me', requireAuth, toAuthService);
   app.use('/api/v1/reports', requireAuth, toAuthService);
-  app.use('/api/v1/products', requireAuth, toInventoryService);
+  app.use('/api/v1/courses', requireAuth, toAcademicService);
+  app.use('/api/v1/enrollments', requireAuth, toAcademicService);
+  app.use('/api/v1/grades', requireAuth, toAcademicService);
 
   app.use((req, res) => res.status(404).json({ error: 'not found' }));
 

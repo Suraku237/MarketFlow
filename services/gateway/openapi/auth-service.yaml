@@ -1,13 +1,13 @@
 openapi: 3.0.3
 info:
-  title: SmartStock Auth Service
+  title: SmartSchool Auth Service
   version: "1.0.0"
   description: >
-    Registration, login and role-based access control (Admin / Cashier).
-    Reached only through the API Gateway — auth-service has no port
-    published directly to the host.
+    Registration, login and role-based access control (Admin / Teacher /
+    Student). Reached only through the API Gateway — auth-service has no
+    port published directly to the host.
 servers:
-  - url: http://localhost:8080/api/v1
+  - url: http://localhost:8081/api/v1
     description: Via the API Gateway
 tags:
   - name: auth
@@ -23,8 +23,8 @@ components:
       properties:
         id: { type: integer, example: 1 }
         name: { type: string, example: "Ada Admin" }
-        email: { type: string, format: email, example: "admin@smartstock.test" }
-        role: { type: string, enum: [admin, cashier], example: "admin" }
+        email: { type: string, format: email, example: "admin@smartschool.test" }
+        role: { type: string, enum: [admin, teacher, student], example: "admin" }
         createdAt: { type: string, format: date-time }
     Error:
       type: object
@@ -45,9 +45,9 @@ paths:
               required: [name, email, password]
               properties:
                 name: { type: string, example: "Ada Admin" }
-                email: { type: string, format: email, example: "admin@smartstock.test" }
+                email: { type: string, format: email, example: "admin@smartschool.test" }
                 password: { type: string, format: password, minLength: 8, example: "adminpass123" }
-                role: { type: string, enum: [admin, cashier], default: cashier }
+                role: { type: string, enum: [admin, teacher, student], default: student }
       responses:
         "201":
           description: User created
@@ -128,11 +128,11 @@ paths:
   /reports:
     get:
       tags: [auth]
-      summary: Role-gated demo report (RBAC + live rule-change demo endpoint)
+      summary: Academic performance report (RBAC + live rule-change demo endpoint)
       security: [{ bearerAuth: [] }]
       responses:
         "200":
-          description: Report visible to the caller's role
+          description: Report visible to the caller's role (Admin or Teacher)
           content:
             application/json:
               schema:

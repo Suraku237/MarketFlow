@@ -1,7 +1,7 @@
-# SmartStock Auth Service
+# SmartSchool Auth Service
 
-Registration, login and role-based access control (Admin / Cashier) for
-SmartStock, backed by bcrypt password hashing and JWT session tokens.
+Registration, login and role-based access control (Admin / Teacher / Student)
+for SmartSchool, backed by bcrypt password hashing and JWT session tokens.
 
 ## Storage
 
@@ -41,7 +41,7 @@ To run just this service standalone (e.g. for local development against a
 locally installed MySQL instead of Docker):
 
 ```
-docker build -t smartstock-auth . && docker run -p 3000:3000 --env-file .env smartstock-auth
+docker build -t smartschool-auth . && docker run -p 3000:3000 --env-file .env smartschool-auth
 ```
 
 ## Running locally without Docker
@@ -57,10 +57,10 @@ npm start
 | Method | Path              | Auth           | Description                          |
 |--------|-------------------|----------------|---------------------------------------|
 | GET    | `/health`         | none           | Liveness check                        |
-| POST   | `/api/auth/register` | none        | Create a user (`name`, `email`, `password`, optional `role`: `admin` \| `cashier`, defaults to `cashier`) |
+| POST   | `/api/auth/register` | none        | Create a user (`name`, `email`, `password`, optional `role`: `admin` \| `teacher` \| `student`, defaults to `student`) |
 | POST   | `/api/auth/login`    | none        | Returns a JWT + user profile          |
 | GET    | `/api/auth/me`       | Bearer JWT  | Returns the identity encoded in the token |
-| GET    | `/api/reports`       | Bearer JWT, role `admin` or `cashier` | Demo endpoint used to show live role changes |
+| GET    | `/api/reports`       | Bearer JWT, role `admin` or `teacher` | Academic performance report — demo endpoint used to show live role changes |
 
 ## Demo script
 
@@ -71,25 +71,35 @@ port `3000` directly.
 # Register an admin
 curl -s -X POST localhost:8081/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Ada Admin","email":"admin@smartstock.test","password":"adminpass123","role":"admin"}'
+  -d '{"name":"Ada Admin","email":"admin@smartschool.test","password":"adminpass123","role":"admin"}'
 
-# Register a cashier
+# Register a teacher
 curl -s -X POST localhost:8081/api/v1/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name":"Cara Cashier","email":"cashier@smartstock.test","password":"cashierpass123","role":"cashier"}'
+  -d '{"name":"Tom Teacher","email":"teacher@smartschool.test","password":"teacherpass123","role":"teacher"}'
+
+# Register a student
+curl -s -X POST localhost:8081/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Sam Student","email":"student@smartschool.test","password":"studentpass123","role":"student"}'
 
 # Log in as each and grab the token
 ADMIN_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@smartstock.test","password":"adminpass123"}' | jq -r .token)
+  -d '{"email":"admin@smartschool.test","password":"adminpass123"}' | jq -r .token)
 
-CASHIER_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
+TEACHER_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"cashier@smartstock.test","password":"cashierpass123"}' | jq -r .token)
+  -d '{"email":"teacher@smartschool.test","password":"teacherpass123"}' | jq -r .token)
 
-# Both can currently see the reports endpoint
+STUDENT_TOKEN=$(curl -s -X POST localhost:8081/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"student@smartschool.test","password":"studentpass123"}' | jq -r .token)
+
+# Admin and Teacher can currently see the reports endpoint; Student cannot
 curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $ADMIN_TOKEN"
-curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $CASHIER_TOKEN"
+curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $TEACHER_TOKEN"
+curl -s localhost:8081/api/v1/reports -H "Authorization: Bearer $STUDENT_TOKEN"   # 403
 ```
 
 ## Live rule change (for the examiner)
@@ -98,7 +108,7 @@ To restrict `/api/reports` to Admins only, edit
 [`src/routes/demo.routes.js`](src/routes/demo.routes.js) and change:
 
 ```js
-router.get('/reports', authenticate, authorize('admin', 'cashier'), ...)
+router.get('/reports', authenticate, authorize('admin', 'teacher'), ...)
 ```
 
 to:
@@ -108,8 +118,8 @@ router.get('/reports', authenticate, authorize('admin'), ...)
 ```
 
 Restart the process (`docker compose restart auth-service`) and re-run the
-two `curl` calls above (still through the Gateway on port `8081`) — the
-cashier token now gets `403 Forbidden`, the admin token still works.
+`curl` calls above (still through the Gateway on port `8081`) — the teacher
+token now gets `403 Forbidden`, the admin token still works.
 
 ## How the security works (for the oral explanation)
 

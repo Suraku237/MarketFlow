@@ -12,26 +12,26 @@ function loadSpec(filename) {
 
 function loadCombinedSpec() {
   const authSpec = loadSpec('auth-service.yaml');
-  const inventorySpec = loadSpec('inventory-service.yaml');
+  const academicSpec = loadSpec('academic-service.yaml');
 
   return {
     openapi: '3.0.3',
     info: {
-      title: 'SmartStock API (via Gateway)',
+      title: 'SmartSchool API (via Gateway)',
       version: '1.0.0',
-      description: 'Combined documentation for every endpoint reachable through the SmartStock API Gateway.',
+      description: 'Combined documentation for every endpoint reachable through the SmartSchool API Gateway.',
     },
     servers: authSpec.servers,
-    tags: [...(authSpec.tags || []), ...(inventorySpec.tags || [])],
-    paths: { ...authSpec.paths, ...inventorySpec.paths },
+    tags: [...(authSpec.tags || []), ...(academicSpec.tags || [])],
+    paths: { ...authSpec.paths, ...academicSpec.paths },
     components: {
       securitySchemes: {
         ...(authSpec.components?.securitySchemes || {}),
-        ...(inventorySpec.components?.securitySchemes || {}),
+        ...(academicSpec.components?.securitySchemes || {}),
       },
       schemas: {
         ...(authSpec.components?.schemas || {}),
-        ...(inventorySpec.components?.schemas || {}),
+        ...(academicSpec.components?.schemas || {}),
       },
     },
   };

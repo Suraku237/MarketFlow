@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Creates a timestamped mysqldump backup of the smartstock database.
+# Creates a timestamped mysqldump backup of the smartschool database.
 #
 # Usage (from the repo root):
 #   ./database/scripts/backup_db.sh
 #
-# Output: database/backups/smartstock_YYYYMMDD_HHMMSS.sql
+# Output: database/backups/smartschool_YYYYMMDD_HHMMSS.sql
 
 set -euo pipefail
 
@@ -18,7 +18,7 @@ cd "$REPO_ROOT"
 
 BACKUP_DIR="$DB_DIR/backups"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
-BACKUP_PATH="$BACKUP_DIR/smartstock_${TIMESTAMP}.sql"
+BACKUP_PATH="$BACKUP_DIR/smartschool_${TIMESTAMP}.sql"
 mkdir -p "$BACKUP_DIR"
 
 echo "Backing up '$DB_NAME' from the '$DB_SERVICE' container..."

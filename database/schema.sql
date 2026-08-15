@@ -1,14 +1,14 @@
 -- ============================================================================
--- SmartStock — Week 2: Database Design & Management
+-- SmartSchool — Week 2: Database Design & Management
 -- Combined relational schema (MySQL 8 dialect)
 --
--- Modules covered (mirrors the exam's Academic / Finance / HR split):
---   1. INVENTORY     -> categories, suppliers, products, stock_movements
---   2. SALES         -> sales, sale_items, payments, demand_forecasts
---   3. STAFF/PAYROLL -> users (shared with auth-service), payroll_runs, payslips
+-- Modules covered (matches the exam's Academic / Finance / HR split):
+--   1. ACADEMIC -> students, courses, enrollments, grades
+--   2. FINANCE  -> invoices (owned by finance-service, Week 4)
+--   3. HR       -> users (shared with auth-service), payroll_runs, payslips
 --
 -- Design notes:
---   * Fixed value-sets (role, status, movement_type, method) use native
+--   * Fixed value-sets (role, status, assessment_type, method) use native
 --     MySQL ENUM types instead of CHECK constraints.
 --   * Money columns use DECIMAL(10,2), not FLOAT/REAL, to avoid rounding
 --     error on currency values.
@@ -18,11 +18,18 @@
 --     "IF NOT EXISTS": on a from-scratch container this always runs clean.
 --   * Every table is in Third Normal Form (3NF): each column depends on the
 --     whole primary key and nothing but the key (no repeating groups, no
---     transitive dependencies — e.g. product price lives only in `products`,
---     never copied into `sale_items` twice; `sale_items.unit_price` is kept
---     deliberately as a *price snapshot at time of sale*, which is not a
+--     transitive dependencies — e.g. a course's fee lives only in `courses`,
+--     never copied into `enrollments`; `invoices.amount` is kept
+--     deliberately as a *price snapshot at enrollment time*, which is not a
 --     3NF violation since it represents a historical fact, not a duplicate
---     of the current `products.unit_price`).
+--     of the current `courses.fee_amount`).
+--   * `students` is a separate table, 1:1 with `users`, rather than bolting
+--     academic-only columns onto `users` — mirrors the existing design
+--     principle of keeping auth identity (login/role) separate from
+--     domain profile data. There is no separate `teachers` table: a teacher
+--     is just a `users` row with role='teacher'; `courses.teacher_id` and
+--     `grades.recorded_by` reference `users.id` directly, the same way
+--     `payslips.staff_id` already does.
 -- ============================================================================
 
 -- ----------------------------------------------------------------------------
@@ -33,100 +40,79 @@ CREATE TABLE users (
     name          VARCHAR(255) NOT NULL,
     email         VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role          ENUM('admin', 'cashier') NOT NULL,
+    role          ENUM('admin', 'teacher', 'student') NOT NULL,
     created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- MODULE 1: INVENTORY
+-- MODULE 1: ACADEMIC
 -- ----------------------------------------------------------------------------
-CREATE TABLE categories (
-    id   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL UNIQUE
+CREATE TABLE students (
+    id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id          INT UNSIGNED NOT NULL UNIQUE,
+    admission_number VARCHAR(20) NOT NULL UNIQUE,
+    date_of_birth    DATE,
+    guardian_name    VARCHAR(255),
+    guardian_phone   VARCHAR(50),
+    enrolled_on      DATE NOT NULL,
+    created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_students_user FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE suppliers (
-    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name          VARCHAR(255) NOT NULL,
-    contact_email VARCHAR(255),
-    contact_phone VARCHAR(50),
-    address       VARCHAR(255),
-    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
-CREATE TABLE products (
-    id                INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sku               VARCHAR(50)  NOT NULL UNIQUE,
-    name              VARCHAR(255) NOT NULL,
-    category_id       INT UNSIGNED NOT NULL,
-    supplier_id       INT UNSIGNED,
-    unit_price        DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),
-    quantity_in_stock INT NOT NULL DEFAULT 0 CHECK (quantity_in_stock >= 0),
-    reorder_level     INT NOT NULL DEFAULT 10 CHECK (reorder_level >= 0),
-    created_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_products_category FOREIGN KEY (category_id) REFERENCES categories(id),
-    CONSTRAINT fk_products_supplier FOREIGN KEY (supplier_id) REFERENCES suppliers(id)
-) ENGINE=InnoDB;
-
-CREATE TABLE stock_movements (
-    id            INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    product_id    INT UNSIGNED NOT NULL,
-    change_qty    INT NOT NULL,
-    movement_type ENUM('RECEIPT', 'SALE', 'ADJUSTMENT', 'RETURN') NOT NULL,
-    reference     VARCHAR(100),
-    created_by    INT UNSIGNED,
-    created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_stockmov_product FOREIGN KEY (product_id) REFERENCES products(id),
-    CONSTRAINT fk_stockmov_user    FOREIGN KEY (created_by) REFERENCES users(id)
-) ENGINE=InnoDB;
-
--- ----------------------------------------------------------------------------
--- MODULE 2: SALES
--- ----------------------------------------------------------------------------
-CREATE TABLE sales (
-    id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    cashier_id   INT UNSIGNED NOT NULL,
-    sale_date    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    total_amount DECIMAL(10,2) NOT NULL DEFAULT 0 CHECK (total_amount >= 0),
-    status       ENUM('pending', 'paid', 'cancelled') NOT NULL DEFAULT 'pending',
-    CONSTRAINT fk_sales_cashier FOREIGN KEY (cashier_id) REFERENCES users(id)
-) ENGINE=InnoDB;
-
-CREATE TABLE sale_items (
+CREATE TABLE courses (
     id         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sale_id    INT UNSIGNED NOT NULL,
-    product_id INT UNSIGNED NOT NULL,
-    quantity   INT NOT NULL CHECK (quantity > 0),
-    unit_price DECIMAL(10,2) NOT NULL CHECK (unit_price >= 0),  -- price snapshot at sale time
-    subtotal   DECIMAL(10,2) NOT NULL CHECK (subtotal >= 0),
-    CONSTRAINT fk_saleitems_sale    FOREIGN KEY (sale_id) REFERENCES sales(id),
-    CONSTRAINT fk_saleitems_product FOREIGN KEY (product_id) REFERENCES products(id)
+    code       VARCHAR(20)  NOT NULL UNIQUE,
+    name       VARCHAR(255) NOT NULL,
+    teacher_id INT UNSIGNED,
+    credits    INT NOT NULL DEFAULT 3 CHECK (credits > 0),
+    fee_amount DECIMAL(10,2) NOT NULL CHECK (fee_amount >= 0),
+    term       VARCHAR(20) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_courses_teacher FOREIGN KEY (teacher_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE payments (
-    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    sale_id        INT UNSIGNED NOT NULL UNIQUE,  -- 1:1 with sales
-    momo_reference VARCHAR(100),
-    amount         DECIMAL(10,2) NOT NULL CHECK (amount >= 0),
-    method         ENUM('momo', 'cash', 'card') NOT NULL DEFAULT 'momo',
-    status         ENUM('pending', 'approved', 'declined') NOT NULL DEFAULT 'pending',
-    paid_at        DATETIME,
-    CONSTRAINT fk_payments_sale FOREIGN KEY (sale_id) REFERENCES sales(id)
+CREATE TABLE enrollments (
+    id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id  INT UNSIGNED NOT NULL,
+    course_id   INT UNSIGNED NOT NULL,
+    status      ENUM('active', 'completed', 'dropped') NOT NULL DEFAULT 'active',
+    enrolled_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_enrollment_student_course (student_id, course_id),
+    CONSTRAINT fk_enrollments_student FOREIGN KEY (student_id) REFERENCES students(id),
+    CONSTRAINT fk_enrollments_course  FOREIGN KEY (course_id)  REFERENCES courses(id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE demand_forecasts (
-    id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    product_id         INT UNSIGNED NOT NULL,
-    forecast_date      DATE NOT NULL,
-    predicted_quantity INT NOT NULL CHECK (predicted_quantity >= 0),
-    model_version      VARCHAR(20) NOT NULL DEFAULT 'v1',
-    created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_forecast_product FOREIGN KEY (product_id) REFERENCES products(id)
+CREATE TABLE grades (
+    id              INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    enrollment_id   INT UNSIGNED NOT NULL,
+    assessment_type ENUM('quiz', 'assignment', 'midterm', 'final') NOT NULL,
+    score           DECIMAL(5,2) NOT NULL CHECK (score >= 0 AND score <= 100),
+    recorded_by     INT UNSIGNED,
+    recorded_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_grades_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments(id),
+    CONSTRAINT fk_grades_recorder   FOREIGN KEY (recorded_by)   REFERENCES users(id)
 ) ENGINE=InnoDB;
 
 -- ----------------------------------------------------------------------------
--- MODULE 3: STAFF & PAYROLL
+-- MODULE 2: FINANCE (owned by finance-service, Week 4)
+-- ----------------------------------------------------------------------------
+CREATE TABLE invoices (
+    id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id     INT UNSIGNED NOT NULL,
+    enrollment_id  INT UNSIGNED NOT NULL UNIQUE,  -- one invoice per enrollment
+    amount         DECIMAL(10,2) NOT NULL CHECK (amount >= 0),  -- fee snapshot at enrollment time
+    momo_reference VARCHAR(100),
+    method         ENUM('momo', 'cash', 'card') NOT NULL DEFAULT 'momo',
+    status         ENUM('pending', 'paid', 'cancelled') NOT NULL DEFAULT 'pending',
+    issued_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    paid_at        DATETIME,
+    CONSTRAINT fk_invoices_student    FOREIGN KEY (student_id)    REFERENCES students(id),
+    CONSTRAINT fk_invoices_enrollment FOREIGN KEY (enrollment_id) REFERENCES enrollments(id)
+) ENGINE=InnoDB;
+
+-- ----------------------------------------------------------------------------
+-- MODULE 3: HR / STAFF PAYROLL
 -- ----------------------------------------------------------------------------
 CREATE TABLE payroll_runs (
     id           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -155,17 +141,17 @@ CREATE TABLE payslips (
 -- ============================================================================
 -- INDEXES — Build Task 5: "add an index to at least 2 tables that will be
 -- searched often". Chosen for the queries the demo actually needs to run
--- fast: looking a product up by name, listing a product's stock history,
--- listing a cashier's sales by date, and looking up a staff member's payslips.
+-- fast: a student's enrollments, a course's roster, a student's grades, a
+-- teacher's own grade entries, and a student's invoices.
 -- ============================================================================
-CREATE INDEX idx_products_name           ON products(name);
-CREATE INDEX idx_products_category       ON products(category_id);
-CREATE INDEX idx_stock_movements_product ON stock_movements(product_id);
-CREATE INDEX idx_sales_sale_date         ON sales(sale_date);
-CREATE INDEX idx_sales_cashier           ON sales(cashier_id);
-CREATE INDEX idx_sale_items_sale         ON sale_items(sale_id);
-CREATE INDEX idx_demand_forecasts_product ON demand_forecasts(product_id);
-CREATE INDEX idx_payslips_staff          ON payslips(staff_id);
--- Note: users.email, products.sku and payments.sale_id already have an
--- implicit unique index from their UNIQUE constraints, so no separate
--- CREATE INDEX is needed there.
+CREATE INDEX idx_courses_teacher      ON courses(teacher_id);
+CREATE INDEX idx_enrollments_student  ON enrollments(student_id);
+CREATE INDEX idx_enrollments_course   ON enrollments(course_id);
+CREATE INDEX idx_grades_enrollment    ON grades(enrollment_id);
+CREATE INDEX idx_grades_recorded_by   ON grades(recorded_by);
+CREATE INDEX idx_invoices_student     ON invoices(student_id);
+CREATE INDEX idx_payslips_staff       ON payslips(staff_id);
+-- Note: users.email, students.user_id, students.admission_number,
+-- courses.code, enrollments(student_id, course_id) and
+-- invoices.enrollment_id already have an implicit unique index from their
+-- UNIQUE constraints, so no separate CREATE INDEX is needed there.

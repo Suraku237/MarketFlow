@@ -12,7 +12,7 @@ function createApp() {
   app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
   app.get('/', (req, res) => res.json({
-    service: 'smartstock-auth-service',
+    service: 'smartschool-auth-service',
     endpoints: [
       'GET /health',
       'POST /api/auth/register',

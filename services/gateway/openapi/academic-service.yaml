@@ -1,0 +1,259 @@
+openapi: 3.0.3
+info:
+  title: SmartSchool Academic Service
+  version: "1.0.0"
+  description: >
+    Courses, enrollments and grades. Reached only through the API Gateway —
+    academic-service has no port published directly to the host.
+servers:
+  - url: http://localhost:8081/api/v1
+    description: Via the API Gateway
+tags:
+  - name: courses
+  - name: enrollments
+  - name: grades
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Course:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        code: { type: string, example: "MATH101" }
+        name: { type: string, example: "Algebra I" }
+        teacher_id: { type: integer, nullable: true, example: 2 }
+        teacher_name: { type: string, nullable: true, example: "Neil Marshall" }
+        credits: { type: integer, example: 3 }
+        fee_amount: { type: string, example: "25000.00" }
+        term: { type: string, example: "2026-S2" }
+    Enrollment:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        student_id: { type: integer, example: 1 }
+        student_name: { type: string, example: "Ama Nti" }
+        course_id: { type: integer, example: 1 }
+        course_code: { type: string, example: "MATH101" }
+        course_name: { type: string, example: "Algebra I" }
+        status: { type: string, enum: [active, completed, dropped], example: "active" }
+        enrolled_at: { type: string, format: date-time }
+    Grade:
+      type: object
+      properties:
+        id: { type: integer, example: 1 }
+        enrollment_id: { type: integer, example: 1 }
+        student_name: { type: string, example: "Ama Nti" }
+        course_code: { type: string, example: "MATH101" }
+        course_name: { type: string, example: "Algebra I" }
+        assessment_type: { type: string, enum: [quiz, assignment, midterm, final], example: "quiz" }
+        score: { type: string, example: "78.50" }
+        recorded_at: { type: string, format: date-time }
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+security:
+  - bearerAuth: []
+paths:
+  /courses:
+    get:
+      tags: [courses]
+      summary: List all courses
+      responses:
+        "200":
+          description: Course list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string, example: "academic-service" }
+                  courses:
+                    type: array
+                    items: { $ref: "#/components/schemas/Course" }
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+    post:
+      tags: [courses]
+      summary: Create a course (Admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code, name, feeAmount, term]
+              properties:
+                code: { type: string, example: "SCI102" }
+                name: { type: string, example: "Physics I" }
+                teacherId: { type: integer, nullable: true }
+                credits: { type: integer, default: 3 }
+                feeAmount: { type: number, example: 28000 }
+                term: { type: string, example: "2026-S2" }
+      responses:
+        "201":
+          description: Course created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  course: { $ref: "#/components/schemas/Course" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: Authenticated but not an Admin
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Course code already exists
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /courses/{id}:
+    get:
+      tags: [courses]
+      summary: Get a single course by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Course found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  course: { $ref: "#/components/schemas/Course" }
+        "404":
+          description: Course not found
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /enrollments:
+    get:
+      tags: [enrollments]
+      summary: List enrollments (a Student only ever sees their own)
+      parameters:
+        - name: studentId
+          in: query
+          schema: { type: integer }
+          description: Admin/Teacher only — filter by student
+        - name: courseId
+          in: query
+          schema: { type: integer }
+          description: Admin/Teacher only — filter by course
+      responses:
+        "200":
+          description: Enrollment list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  enrollments:
+                    type: array
+                    items: { $ref: "#/components/schemas/Enrollment" }
+    post:
+      tags: [enrollments]
+      summary: Enroll in a course (Admin or Student). Publishes the Week 4 "enrollment.created" event.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [courseId]
+              properties:
+                studentId: { type: integer, description: "Required for Admin; ignored for Student (self)" }
+                courseId: { type: integer, example: 1 }
+      responses:
+        "201":
+          description: Enrollment created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  enrollment: { $ref: "#/components/schemas/Enrollment" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "409":
+          description: Already enrolled in this course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+
+  /grades:
+    get:
+      tags: [grades]
+      summary: List grades (Student sees only their own; Teacher sees only their courses')
+      responses:
+        "200":
+          description: Grade list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  grades:
+                    type: array
+                    items: { $ref: "#/components/schemas/Grade" }
+    post:
+      tags: [grades]
+      summary: Record a grade (Admin or Teacher; Teacher limited to their own courses)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enrollmentId, assessmentType, score]
+              properties:
+                enrollmentId: { type: integer, example: 1 }
+                assessmentType: { type: string, enum: [quiz, assignment, midterm, final] }
+                score: { type: number, minimum: 0, maximum: 100, example: 82.5 }
+      responses:
+        "201":
+          description: Grade recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service: { type: string }
+                  grade: { $ref: "#/components/schemas/Grade" }
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }
+        "403":
+          description: Teacher does not own this course
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Error" }

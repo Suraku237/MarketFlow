@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# (Re)creates the smartstock MySQL database from schema.sql + seed.sql,
+# (Re)creates the smartschool MySQL database from schema.sql + seed.sql,
 # against the running `db` container. Safe to re-run: it drops and recreates
 # the database first, so it always ends in the same known state — useful for
 # resetting to a clean demo state before the evaluation.

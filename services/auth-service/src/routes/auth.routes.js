@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
   if (password.length < 8) {
     return res.status(400).json({ error: 'password must be at least 8 characters' });
   }
-  const finalRole = role || 'cashier';
+  const finalRole = role || 'student';
   if (!ROLES.includes(finalRole)) {
     return res.status(400).json({ error: `role must be one of: ${ROLES.join(', ')}` });
   }

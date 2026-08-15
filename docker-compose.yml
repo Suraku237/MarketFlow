@@ -3,7 +3,7 @@ services:
     image: mysql:8.0
     environment:
       MYSQL_ROOT_PASSWORD: dev-only-change-me
-      MYSQL_DATABASE: smartstock
+      MYSQL_DATABASE: smartschool
     ports:
       # Host-side 3307 avoids clashing with a locally installed MySQL on
       # 3306; the app services still reach this container over the internal
@@ -22,6 +22,21 @@ services:
       timeout: 5s
       retries: 10
 
+  # Week 4: message broker for the "student enrolls -> invoice created"
+  # asynchronous workflow. Management UI published so the live evaluation
+  # can watch the exchange/queue/message directly.
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    ports:
+      # Host-side 5673 avoids clashing with a locally installed RabbitMQ.
+      - "5673:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # Week 3: not published to the host — the Gateway is the only front door.
   # Reachable from other containers at auth-service:3000.
   auth-service:
@@ -34,15 +49,16 @@ services:
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: dev-only-change-me
-      DB_NAME: smartstock
+      DB_NAME: smartschool
     depends_on:
       db:
         condition: service_healthy
 
-  # Week 3 module service (product catalog). Also not published to the host —
-  # only reachable via the Gateway at inventory-service:4000.
-  inventory-service:
-    build: ./services/inventory-service
+  # Week 3 module service (courses/enrollments/grades). Also not published to
+  # the host — only reachable via the Gateway at academic-service:4000.
+  # Week 4: publishes "enrollment.created" to RabbitMQ on POST /api/enrollments.
+  academic-service:
+    build: ./services/academic-service
     environment:
       PORT: 4000
       JWT_SECRET: dev-only-change-me
@@ -50,9 +66,32 @@ services:
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: dev-only-change-me
-      DB_NAME: smartstock
+      DB_NAME: smartschool
+      RABBITMQ_URL: amqp://rabbitmq:5672
     depends_on:
       db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  # Week 4 module service (invoices). Not published to the host — only
+  # reachable via the Gateway at finance-service:4001. Consumes
+  # "enrollment.created" from RabbitMQ independently of academic-service.
+  finance-service:
+    build: ./services/finance-service
+    environment:
+      PORT: 4001
+      JWT_SECRET: dev-only-change-me
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: dev-only-change-me
+      DB_NAME: smartschool
+      RABBITMQ_URL: amqp://rabbitmq:5672
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
 
   # Week 3: the only service published to the host. All external traffic —
@@ -67,12 +106,14 @@ services:
       PORT: 8080
       JWT_SECRET: dev-only-change-me
       AUTH_SERVICE_URL: http://auth-service:3000
-      INVENTORY_SERVICE_URL: http://inventory-service:4000
+      ACADEMIC_SERVICE_URL: http://academic-service:4000
+      FINANCE_SERVICE_URL: http://finance-service:4001
       RATE_LIMIT_WINDOW_MS: 60000
       RATE_LIMIT_MAX: 10
     depends_on:
       - auth-service
-      - inventory-service
+      - academic-service
+      - finance-service
 
 volumes:
   db_data:

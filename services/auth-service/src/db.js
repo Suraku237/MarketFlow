@@ -1,4 +1,4 @@
-// Connection pool for the shared SmartStock MySQL database (see
+// Connection pool for the shared SmartSchool MySQL database (see
 // database/schema.sql at the repo root, Week 2). auth-service reads/writes
 // the `users` table through this pool instead of the old in-memory Map
 // (see store.js).
@@ -13,7 +13,7 @@ const pool = mysql.createPool({
   port: Number(process.env.DB_PORT) || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'dev-only-change-me',
-  database: process.env.DB_NAME || 'smartstock',
+  database: process.env.DB_NAME || 'smartschool',
   waitForConnections: true,
   connectionLimit: 10,
 });

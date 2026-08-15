@@ -1,50 +1,43 @@
 -- ============================================================================
--- SmartStock — sample seed data (for local demo / evaluation only)
+-- SmartSchool — sample seed data (for local demo / evaluation only)
 -- Runs once, right after schema.sql, via the MySQL container's
 -- docker-entrypoint-initdb.d mechanism.
 -- ============================================================================
 
--- Staff (password hashes are placeholders — real hashes come from auth-service;
--- register real demo accounts through the Week 1 API instead of logging in
--- with these rows directly).
+-- Staff & students (password hashes are placeholders — real hashes come from
+-- auth-service; register real demo accounts through the Week 1 API instead
+-- of logging in with these rows directly).
 INSERT INTO users (name, email, password_hash, role) VALUES
-    ('Rayan Kwete',   'admin@smartstock.local',   '$2a$10$placeholderadminhash', 'admin'),
-    ('Neil Marshall', 'cashier@smartstock.local', '$2a$10$placeholdercashhash',  'cashier');
+    ('Rayan Kwete',   'admin@smartschool.local',   '$2a$10$placeholderadminhash',   'admin'),
+    ('Neil Marshall', 'teacher@smartschool.local', '$2a$10$placeholderteacherhash', 'teacher'),
+    ('Ama Nti',       'ama@smartschool.local',     '$2a$10$placeholderstudent1hash', 'student'),
+    ('Kofi Mensah',   'kofi@smartschool.local',    '$2a$10$placeholderstudent2hash', 'student');
 
--- Inventory
-INSERT INTO categories (name) VALUES ('Beverages'), ('Bakery'), ('Household');
+-- Academic
+INSERT INTO students (user_id, admission_number, date_of_birth, guardian_name, guardian_phone, enrolled_on) VALUES
+    (3, 'ADM-2026-001', '2008-03-14', 'Efua Nti',    '+237670000011', '2026-01-15'),
+    (4, 'ADM-2026-002', '2007-11-02', 'Yaw Mensah',  '+237670000012', '2026-01-15');
 
-INSERT INTO suppliers (name, contact_email, contact_phone, address) VALUES
-    ('Douala Beverage Co.', 'sales@doualabev.cm', '+237670000001', 'Douala, Cameroon'),
-    ('Yaounde Bakers Ltd.', 'orders@ydebakers.cm', '+237670000002', 'Yaounde, Cameroon');
+INSERT INTO courses (code, name, teacher_id, credits, fee_amount, term) VALUES
+    ('MATH101', 'Algebra I',              2, 3, 25000, '2026-S2'),
+    ('ENG101',  'English Composition',    2, 3, 20000, '2026-S2'),
+    ('SCI101',  'Introduction to Science', 2, 4, 30000, '2026-S2');
 
-INSERT INTO products (sku, name, category_id, supplier_id, unit_price, quantity_in_stock, reorder_level) VALUES
-    ('BEV-001', 'Mineral Water 1.5L', 1, 1, 500,  120, 30),
-    ('BEV-002', 'Orange Juice 1L',    1, 1, 1200,  40, 15),
-    ('BAK-001', 'Sliced Bread',       2, 2, 800,   25, 10),
-    ('HH-001',  'Dish Soap 500ml',    3, NULL, 1500, 60, 20);
+INSERT INTO enrollments (student_id, course_id, status) VALUES
+    (1, 1, 'active'),
+    (2, 2, 'active');
 
-INSERT INTO stock_movements (product_id, change_qty, movement_type, reference, created_by) VALUES
-    (1, 150, 'RECEIPT', 'PO-1001', 1),
-    (1, -30, 'SALE',    'SALE-1',  2),
-    (3, 40,  'RECEIPT', 'PO-1002', 1);
+INSERT INTO grades (enrollment_id, assessment_type, score, recorded_by) VALUES
+    (1, 'quiz',       78.50, 2),
+    (2, 'assignment', 85.00, 2);
 
--- Sales
-INSERT INTO sales (cashier_id, total_amount, status) VALUES
-    (2, 2300, 'paid');
+-- Finance (owned by finance-service, Week 4) — one pre-existing invoice so
+-- there's something to see immediately; a fresh live enrollment during the
+-- evaluation demonstrates the actual RabbitMQ flow creating a new one.
+INSERT INTO invoices (student_id, enrollment_id, amount, momo_reference, method, status, paid_at) VALUES
+    (1, 1, 25000, 'MOMO-REF-0001', 'momo', 'paid', NOW());
 
-INSERT INTO sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES
-    (1, 1, 3, 500, 1500),
-    (1, 3, 1, 800, 800);
-
-INSERT INTO payments (sale_id, momo_reference, amount, method, status, paid_at) VALUES
-    (1, 'MOMO-REF-0001', 2300, 'momo', 'approved', NOW());
-
-INSERT INTO demand_forecasts (product_id, forecast_date, predicted_quantity, model_version) VALUES
-    (1, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 100, 'v1'),
-    (2, DATE_ADD(CURDATE(), INTERVAL 7 DAY), 35,  'v1');
-
--- Payroll
+-- HR / Payroll
 INSERT INTO payroll_runs (period_start, period_end, status, created_by) VALUES
     (DATE_FORMAT(CURDATE(), '%Y-%m-01'), LAST_DAY(CURDATE()), 'processed', 1);
 

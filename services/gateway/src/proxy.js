@@ -5,7 +5,7 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3000';
-const INVENTORY_SERVICE_URL = process.env.INVENTORY_SERVICE_URL || 'http://localhost:4000';
+const ACADEMIC_SERVICE_URL = process.env.ACADEMIC_SERVICE_URL || 'http://localhost:4000';
 
 // pathRewrite is a function, not a regex map, because these proxies are
 // mounted with app.use('/some/exact/path', proxy) — Express strips that
@@ -21,10 +21,14 @@ const toAuthService = createProxyMiddleware({
       .replace(/^\/api\/v1\/reports/, '/api/reports'),
 });
 
-const toInventoryService = createProxyMiddleware({
-  target: INVENTORY_SERVICE_URL,
+const toAcademicService = createProxyMiddleware({
+  target: ACADEMIC_SERVICE_URL,
   changeOrigin: true,
-  pathRewrite: (_path, req) => req.originalUrl.replace(/^\/api\/v1\/products/, '/api/products'),
+  pathRewrite: (_path, req) =>
+    req.originalUrl
+      .replace(/^\/api\/v1\/courses/, '/api/courses')
+      .replace(/^\/api\/v1\/enrollments/, '/api/enrollments')
+      .replace(/^\/api\/v1\/grades/, '/api/grades'),
 });
 
-module.exports = { toAuthService, toInventoryService };
+module.exports = { toAuthService, toAcademicService };

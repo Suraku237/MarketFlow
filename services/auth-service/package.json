@@ -1,7 +1,7 @@
 {
-  "name": "smartstock-auth-service",
+  "name": "smartschool-auth-service",
   "version": "1.0.0",
-  "description": "Authentication & authorization service for SmartStock (register, login, JWT, roles)",
+  "description": "Authentication & authorization service for SmartSchool (register, login, JWT, roles: admin/teacher/student)",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
