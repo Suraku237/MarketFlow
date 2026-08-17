@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.5) (preloaded format=xelatex 2026.7.20)  17 AUG 2026 12:17
+This is XeTeX, Version 3.141592653-2.6-0.999998 (MiKTeX 26.5) (preloaded format=xelatex 2026.7.20)  17 AUG 2026 15:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -841,14 +841,13 @@ LaTeX Font Info:    ... okay on input line 106.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 Package hyperref Info: Link coloring ON on input line 106.
+(SmartSchool_SDD.out) (SmartSchool_SDD.out)
 \@outlinefile=\write4
 \openout4 = `SmartSchool_SDD.out'.
 
-
-Package hyperref Warning: Rerun to get /PageLabels entry.
-
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: longtable package is loaded.
+
 (C:\Program Files\MiKTeX\tex/latex/caption\ltcaption.sty
 Package: ltcaption 2021/01/08 v1.4c longtable captions (AR)
 )
@@ -952,238 +951,191 @@ LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/m/n' will be
  [1
 
 ]
-No file SmartSchool_SDD.toc.
+(SmartSchool_SDD.toc
+LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
+(Font)              scaled to size 9.85492pt on input line 31.
+ [1])
 \tf@toc=\write5
 \openout5 = `SmartSchool_SDD.toc'.
 
-[1]
+ [2]
 Chapter 1.
-[2
+
+LaTeX Warning: Reference `tab:notation' on page 3 undefined on input line 214.
+
+[3
 
 
-] [3]
-Chapter 2.
-LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
-(Font)              scaled to size 9.85492pt on input line 232.
-
-LaTeX Warning: Reference `fig:arch' on page 4 undefined on input line 238.
-
-LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/m/n' will be
-(Font)              scaled to size 9.0pt on input line 245.
+]
 LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/b/n' will be
-(Font)              scaled to size 10.0pt on input line 247.
-LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/b/n' will be
-(Font)              scaled to size 9.0pt on input line 247.
-LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/m/n' will be
-(Font)              scaled to size 5.0pt on input line 247.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <9> on input line 247.
-LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 247.
-
-Overfull \hbox (35.75336pt too wide) in paragraph at lines 269--270
- [][] 
- []
-
+(Font)              scaled to size 10.0pt on input line 219.
 LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/m/it' will be
-(Font)              scaled to size 10.95pt on input line 280.
+(Font)              scaled to size 10.95pt on input line 226.
 
-ignored: Infinite glue shrinkage found in box being split [4
+ignored: Infinite glue shrinkage found in box being split [4] [5]
+Chapter 2.
 
-] [5]
-Chapter 3.
+LaTeX Warning: Reference `tab:notation' on page 6 undefined on input line 293.
 
-LaTeX Warning: Reference `fig:usecase' on page 6 undefined on input line 307.
-
-File: figures/smartschool/01_usecase.png Graphic file (type bmp)
-<figures/smartschool/01_usecase.png>
+File: figures/smartschool/09_component.png Graphic file (type bmp)
+<figures/smartschool/09_component.png>
 LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
-(Font)              scaled to size 8.99994pt on input line 312.
+(Font)              scaled to size 8.99994pt on input line 304.
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
 [6
 
-] [7
-
 ]
-Chapter 4.
+ignored: Infinite glue shrinkage found in box being split [7] [8]
+Chapter 3.
 
-LaTeX Warning: Reference `fig:erd' on page 8 undefined on input line 351.
-
-LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/b/n' will be
-(Font)              scaled to size 8.0pt on input line 389.
-
-LaTeX Warning: Reference `sec:idempotency' on page 8 undefined on input line 39
-9.
-
-[8
-
-]
-Overfull \hbox (1.10637pt too wide) in paragraph at lines 404--414
-\TU/LatinModernMono(0)/m/n/10.95 grades.enrollment_id\TU/LatinModernSans(0)/m/n
-/10.95 /\TU/LatinModernMono(0)/m/n/10.95 recorded_by\TU/LatinModernSans(0)/m/n/
-10.95 , \TU/LatinModernMono(0)/m/n/10.95 invoices.student_id\TU/LatinModernSans
-(0)/m/n/10.95 , \TU/LatinModernMono(0)/m/n/10.95 payslips.staff_id\TU/LatinMode
-rnSans(0)/m/n/10.95 ), beyond the exam’s
- []
-
-
-LaTeX Warning: Reference `fig:erd' on page 9 undefined on input line 416.
-
-
-LaTeX Warning: Reference `fig:class' on page 9 undefined on input line 417.
-
-File: figures/smartschool/02_class.png Graphic file (type bmp)
-<figures/smartschool/02_class.png>
-[9]
-Chapter 5.
-
-LaTeX Warning: Reference `fig:seq-auth' on page 10 undefined on input line 434.
-
-
-File: figures/smartschool/03_seq_auth.png Graphic file (type bmp)
-<figures/smartschool/03_seq_auth.png>
-
-Underfull \hbox (badness 10000) in paragraph at lines 439--439
-[][]\TU/LatinModernSans(0)/b/n/10 Figure 5.1[][]: []|\TU/LatinModernSans(0)/m/n
-/10 Sequence diagram: registration and login (PlantUML source:
- []
-
-
-LaTeX Warning: Reference `fig:seq-enroll' on page 10 undefined on input line 44
-4.
-
-File: figures/smartschool/04_seq_enrollment_invoice.png Graphic file (type bmp)
-
-<figures/smartschool/04_seq_enrollment_invoice.png>
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[10
-
-] [11]
-
-LaTeX Warning: Reference `fig:seq-grade' on page 12 undefined on input line 456
-.
-
-File: figures/smartschool/05_seq_grade.png Graphic file (type bmp)
-<figures/smartschool/05_seq_grade.png>
-
-LaTeX Warning: Reference `fig:state' on page 12 undefined on input line 469.
-
-File: figures/smartschool/07_state_invoice.png Graphic file (type bmp)
-<figures/smartschool/07_state_invoice.png>
-
-Underfull \hbox (badness 10000) in paragraph at lines 478--478
-[][]\TU/LatinModernSans(0)/b/n/10 Figure 5.4[][]: []|\TU/LatinModernSans(0)/m/n
-/10 State transition diagram: invoice status lifecycle (PlantUML source:
- []
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:activity' on page 12 undefined on input line 483.
-
-
-
-LaTeX Warning: Reference `fig:seq-enroll' on page 12 undefined on input line 48
-4.
-
-File: figures/smartschool/06_activity_enrollment.png Graphic file (type bmp)
-<figures/smartschool/06_activity_enrollment.png>
-
-Underfull \hbox (badness 6808) in paragraph at lines 492--492
-[][]\TU/LatinModernSans(0)/b/n/10 Figure 5.5[][]: []|\TU/LatinModernSans(0)/m/n
-/10 Activity diagram: enrollment-to-invoice workflow, including the fork into a
-n
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 492--492
-\TU/LatinModernSans(0)/m/n/10 immediate HTTP response and an independent asynch
-ronous branch (PlantUML source:
- []
-
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-
-LaTeX Warning: Reference `fig:object' on page 12 undefined on input line 497.
-
-
-LaTeX Warning: Reference `fig:class' on page 12 undefined on input line 500.
-
-
-LaTeX Warning: Reference `chap:api-design' on page 12 undefined on input line 5
-01.
-
-File: figures/smartschool/08_object_snapshot.png Graphic file (type bmp)
-<figures/smartschool/08_object_snapshot.png>
-
-LaTeX Warning: `!h' float specifier changed to `!ht'.
-
-[12
-
-] [13] [14] [15]
-Chapter 6.
-
-Underfull \hbox (badness 10000) in paragraph at lines 536--537
-[]|\TU/LatinModernSans(0)/m/n/10.95 JWT (ad-
- []
-
-
-Underfull \hbox (badness 3179) in paragraph at lines 537--538
-[]|\TU/LatinModernSans(0)/m/n/10.95 JWT (POST:
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 538--539
-[]|\TU/LatinModernSans(0)/m/n/10.95 JWT
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 538--539
-\TU/LatinModernSans(0)/m/n/10.95 (POST: ad-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 539--540
-[]|\TU/LatinModernSans(0)/m/n/10.95 JWT
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 539--540
-\TU/LatinModernSans(0)/m/n/10.95 (POST: ad-
+Underfull \hbox (badness 10000) in paragraph at lines 336--337
+[]|\TU/LatinModernSans(0)/m/n/10.95 Non-human, supporting actor: carries the
  []
 
 
 LaTeX Font Warning: Font shape `TU/LatinModernMono(0)/b/n' undefined
-(Font)              using `TU/LatinModernMono(0)/m/n' instead on input line 544
+(Font)              using `TU/LatinModernMono(0)/m/n' instead on input line 347
 .
 
-LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
-(Font)              scaled to size 12.9599pt on input line 544.
+LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/b/n' will be
+(Font)              scaled to size 9.85492pt on input line 348.
+File: figures/smartschool/01_usecase.png Graphic file (type bmp)
+<figures/smartschool/01_usecase.png>
 
-LaTeX Warning: Reference `fig:object' on page 16 undefined on input line 547.
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[9
+
+] [10] [11
+
+]
+Chapter 4.
+LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/b/n' will be
+(Font)              scaled to size 8.0pt on input line 431.
+LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/m/n' will be
+(Font)              scaled to size 5.0pt on input line 431.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <5> on input line 431.
+[12
+
+]
+Overfull \hbox (1.10637pt too wide) in paragraph at lines 446--456
+\TU/LatinModernMono(0)/b/n/10.95 grades.enrollment_id\TU/LatinModernSans(0)/m/n
+/10.95 /\TU/LatinModernMono(0)/b/n/10.95 recorded_by\TU/LatinModernSans(0)/m/n/
+10.95 , \TU/LatinModernMono(0)/b/n/10.95 invoices.student_id\TU/LatinModernSans
+(0)/m/n/10.95 , \TU/LatinModernMono(0)/b/n/10.95 payslips.staff_id\TU/LatinMode
+rnSans(0)/m/n/10.95 ), beyond the exam’s
+ []
+
+File: figures/smartschool/02_class.png Graphic file (type bmp)
+<figures/smartschool/02_class.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[13] [14]
+Chapter 5.
+File: figures/smartschool/03_seq_auth.png Graphic file (type bmp)
+<figures/smartschool/03_seq_auth.png>
+[15
+
+]
+File: figures/smartschool/04_seq_enrollment_invoice.png Graphic file (type bmp)
+
+<figures/smartschool/04_seq_enrollment_invoice.png>
+
+Underfull \hbox (badness 10000) in paragraph at lines 509--509
+[][]\TU/LatinModernSans(0)/b/n/10 Figure 5.2[][]: []|\TU/LatinModernSans(0)/m/n
+/10 Sequence diagram: enrollment triggers asynchronous invoice creation, with
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 509--509
+\TU/LatinModernSans(0)/m/n/10 activation bars showing exactly when each partici
+pant is doing work (PlantUML source:
+ []
+
+[16]
+File: figures/smartschool/05_seq_grade.png Graphic file (type bmp)
+<figures/smartschool/05_seq_grade.png>
+File: figures/smartschool/07_state_invoice.png Graphic file (type bmp)
+<figures/smartschool/07_state_invoice.png>
+
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+File: figures/smartschool/06_activity_enrollment.png Graphic file (type bmp)
+<figures/smartschool/06_activity_enrollment.png>
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+
+Overfull \hbox (4.36559pt too wide) in paragraph at lines 563--574
+\TU/LatinModernSans(0)/m/n/10.95 Figure [][]5.6[][] is a concrete runtime snaps
+hot – specific instances of \TU/LatinModernMono(0)/b/n/10.95 Student\TU/LatinMo
+dernSans(0)/m/n/10.95 , \TU/LatinModernMono(0)/b/n/10.95 Teacher\TU/LatinModern
+Sans(0)/m/n/10.95 , \TU/LatinModernMono(0)/b/n/10.95 Course\TU/LatinModernSans(
+0)/m/n/10.95 , \TU/LatinModernMono(0)/b/n/10.95 Enrollment\TU/LatinModernSans(0
+)/m/n/10.95 ,
+ []
+
+[17
+
+]
+File: figures/smartschool/08_object_snapshot.png Graphic file (type bmp)
+<figures/smartschool/08_object_snapshot.png>
+ [18] [19] [20]
+Chapter 6.
+
+Underfull \hbox (badness 10000) in paragraph at lines 608--609
+[]|\TU/LatinModernSans(0)/m/n/10.95 JWT (ad-
+ []
+
+
+Underfull \hbox (badness 3179) in paragraph at lines 609--610
+[]|\TU/LatinModernSans(0)/m/n/10.95 JWT (POST:
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 610--611
+[]|\TU/LatinModernSans(0)/m/n/10.95 JWT
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 610--611
+\TU/LatinModernSans(0)/m/n/10.95 (POST: ad-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 611--612
+[]|\TU/LatinModernSans(0)/m/n/10.95 JWT
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 611--612
+\TU/LatinModernSans(0)/m/n/10.95 (POST: ad-
+ []
 
 LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/b/n' will be
-(Font)              scaled to size 9.85492pt on input line 572.
-[16
+(Font)              scaled to size 12.9599pt on input line 616.
+[21
 
-] [17]
+] [22]
 Chapter 7.
-[18
+[23
 
 ]
 Chapter 8.
-[19
+[24
 
 ]
 Chapter 9.
-[20
+[25
 
 ]
 Chapter 10.
-[21
+[26
 
 ] (SmartSchool_SDD.aux)
  ***********
@@ -1206,16 +1158,16 @@ Package rerunfilecheck Warning: File `SmartSchool_SDD.out' has changed.
 (rerunfilecheck)                or use package `bookmark'.
 
 Package rerunfilecheck Info: Checksums for `SmartSchool_SDD.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  9DA8EF6D4657C736344B6792A6084095;7455.
+(rerunfilecheck)             Before: AFCB1FAD161C94605462F82E4D2C0A20;7497
+(rerunfilecheck)             After:  674BBF5B35D727B88F55E4FBCCB38C31;7672.
  ) 
 Here is how much of TeX's memory you used:
- 27205 strings out of 402807
- 567654 string characters out of 5449482
- 1015818 words of memory out of 5000000
- 55723 multiletter control sequences out of 15000+600000
- 632044 words of font info for 92 fonts, out of 8000000 for 9000
+ 27155 strings out of 402807
+ 566978 string characters out of 5449482
+ 1032886 words of memory out of 5000000
+ 55671 multiletter control sequences out of 15000+600000
+ 631116 words of font info for 87 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
- 98i,12n,108p,462b,884s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 98i,12n,108p,469b,881s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
-Output written on SmartSchool_SDD.pdf (22 pages).
+Output written on SmartSchool_SDD.pdf (27 pages).

@@ -1,42 +1,43 @@
-\contentsline {chapter}{\numberline {1}Introduction}{2}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Purpose}{2}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Scope}{2}{section.1.2}%
-\contentsline {section}{\numberline {1.3}Definitions and Abbreviations}{2}{section.1.3}%
-\contentsline {section}{\numberline {1.4}Document Overview}{2}{section.1.4}%
-\contentsline {section}{\numberline {1.5}Group Contributions}{3}{section.1.5}%
-\contentsline {chapter}{\numberline {2}System Architecture}{4}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Architectural Style}{4}{section.2.1}%
-\contentsline {section}{\numberline {2.2}Component Diagram}{4}{section.2.2}%
-\contentsline {section}{\numberline {2.3}Component Responsibilities}{4}{section.2.3}%
-\contentsline {chapter}{\numberline {3}Use Case Model}{6}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Actors}{6}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Use Case Diagram}{6}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Key Use Case Specification: Enroll in a Course}{7}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Key Use Case Specification: Record a Grade}{7}{section.3.4}%
-\contentsline {chapter}{\numberline {4}Static Structure -- Data Model}{8}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Overview}{8}{section.4.1}%
-\contentsline {section}{\numberline {4.2}Notable Design Decisions}{8}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Normalization (3NF)}{9}{section.4.3}%
-\contentsline {section}{\numberline {4.4}UML Class Diagram}{9}{section.4.4}%
-\contentsline {chapter}{\numberline {5}Dynamic Behaviour}{10}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Sequence Diagram: Registration and Login}{10}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Sequence Diagram: Enroll in a Course (Async Invoice Creation)}{10}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Sequence Diagram: Record a Grade}{12}{section.5.3}%
-\contentsline {section}{\numberline {5.4}State Transition Diagram: Invoice}{12}{section.5.4}%
-\contentsline {section}{\numberline {5.5}Activity Diagram: Enrollment-to-Invoice Workflow}{12}{section.5.5}%
-\contentsline {section}{\numberline {5.6}Object Diagram: Sample Enrollment Snapshot}{12}{section.5.6}%
-\contentsline {section}{\numberline {5.7}Idempotent Event Consumption}{13}{section.5.7}%
-\contentsline {chapter}{\numberline {6}API Design}{16}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Routing Table (Gateway)}{16}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Event Contract: \texttt {enrollment.created}}{16}{section.6.2}%
-\contentsline {chapter}{\numberline {7}Security Design}{18}{chapter.7}%
-\contentsline {section}{\numberline {7.1}Authentication and Session Model}{18}{section.7.1}%
-\contentsline {section}{\numberline {7.2}Defense in Depth}{18}{section.7.2}%
-\contentsline {section}{\numberline {7.3}OWASP Top 10 Mitigations}{18}{section.7.3}%
-\contentsline {chapter}{\numberline {8}Performance and Reliability}{19}{chapter.8}%
-\contentsline {section}{\numberline {8.1}Rate Limiting}{19}{section.8.1}%
-\contentsline {section}{\numberline {8.2}Load Testing}{19}{section.8.2}%
-\contentsline {section}{\numberline {8.3}Fault Tolerance in the Async Workflow}{19}{section.8.3}%
-\contentsline {chapter}{\numberline {9}Deployment View}{20}{chapter.9}%
-\contentsline {section}{\numberline {9.1}Container Topology}{20}{section.9.1}%
-\contentsline {chapter}{\numberline {10}Planned Work (Weeks 5--6)}{21}{chapter.10}%
+\contentsline {chapter}{\numberline {1}Introduction}{3}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Purpose}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Scope}{3}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Definitions and Abbreviations}{3}{section.1.3}%
+\contentsline {section}{\numberline {1.4}Document Overview}{3}{section.1.4}%
+\contentsline {section}{\numberline {1.5}Notation Used in This Document}{3}{section.1.5}%
+\contentsline {section}{\numberline {1.6}Group Contributions}{5}{section.1.6}%
+\contentsline {chapter}{\numberline {2}System Architecture}{6}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Architectural Style}{6}{section.2.1}%
+\contentsline {section}{\numberline {2.2}Component Diagram}{6}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Component Responsibilities}{6}{section.2.3}%
+\contentsline {chapter}{\numberline {3}Use Case Model}{9}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Actors}{9}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Use Case Diagram}{9}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Key Use Case Specification: Enroll in a Course}{11}{section.3.3}%
+\contentsline {section}{\numberline {3.4}Key Use Case Specification: Record a Grade}{11}{section.3.4}%
+\contentsline {chapter}{\numberline {4}Static Structure -- Data Model}{12}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Overview}{12}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Notable Design Decisions}{12}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Normalization (3NF)}{13}{section.4.3}%
+\contentsline {section}{\numberline {4.4}UML Class Diagram}{13}{section.4.4}%
+\contentsline {chapter}{\numberline {5}Dynamic Behaviour}{15}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Sequence Diagram: Registration and Login}{15}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Sequence Diagram: Enroll in a Course (Async Invoice Creation)}{16}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Sequence Diagram: Record a Grade}{17}{section.5.3}%
+\contentsline {section}{\numberline {5.4}State Transition Diagram: Invoice}{17}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Activity Diagram: Enrollment-to-Invoice Workflow}{17}{section.5.5}%
+\contentsline {section}{\numberline {5.6}Object Diagram: Sample Enrollment Snapshot}{18}{section.5.6}%
+\contentsline {section}{\numberline {5.7}Idempotent Event Consumption}{19}{section.5.7}%
+\contentsline {chapter}{\numberline {6}API Design}{21}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Routing Table (Gateway)}{21}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Event Contract: \texttt {enrollment.created}}{21}{section.6.2}%
+\contentsline {chapter}{\numberline {7}Security Design}{23}{chapter.7}%
+\contentsline {section}{\numberline {7.1}Authentication and Session Model}{23}{section.7.1}%
+\contentsline {section}{\numberline {7.2}Defense in Depth}{23}{section.7.2}%
+\contentsline {section}{\numberline {7.3}OWASP Top 10 Mitigations}{23}{section.7.3}%
+\contentsline {chapter}{\numberline {8}Performance and Reliability}{24}{chapter.8}%
+\contentsline {section}{\numberline {8.1}Rate Limiting}{24}{section.8.1}%
+\contentsline {section}{\numberline {8.2}Load Testing}{24}{section.8.2}%
+\contentsline {section}{\numberline {8.3}Fault Tolerance in the Async Workflow}{24}{section.8.3}%
+\contentsline {chapter}{\numberline {9}Deployment View}{25}{chapter.9}%
+\contentsline {section}{\numberline {9.1}Container Topology}{25}{section.9.1}%
+\contentsline {chapter}{\numberline {10}Planned Work (Weeks 5--6)}{26}{chapter.10}%
