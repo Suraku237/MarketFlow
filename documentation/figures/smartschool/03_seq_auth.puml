@@ -10,6 +10,7 @@ skinparam sequence {
   ParticipantFontColor #26215C
   ActorBorderColor #26215C
   ActorBackgroundColor #F1EFE8
+  BoxBorderColor #26215C
 }
 
 actor Client
@@ -18,19 +19,21 @@ participant "Auth Service" as Auth
 database "MySQL" as DB
 
 == Registration ==
-Client -> GW : POST /api/v1/auth/register
-GW -> Auth : forward (public route, no JWT required)
+Client -> GW ++ : POST /api/v1/auth/register
+GW -> Auth ++ : forward (public route, no JWT required)
 Auth -> Auth : bcrypt.hash(password, 10 rounds)
-Auth -> DB : INSERT INTO users(name, email, password_hash, role)
-DB --> Auth : user row
-Auth --> Client : 201 Created\n(passwordHash stripped)
+Auth -> DB ++ : INSERT INTO users(name, email, password_hash, role)
+DB --> Auth -- : user row
+Auth --> GW -- : 201 Created\n(passwordHash stripped)
+GW --> Client -- : 201 Created
 
 == Login ==
-Client -> GW : POST /api/v1/auth/login
-GW -> Auth : forward
-Auth -> DB : SELECT * FROM users WHERE email = ?
-DB --> Auth : user row
+Client -> GW ++ : POST /api/v1/auth/login
+GW -> Auth ++ : forward
+Auth -> DB ++ : SELECT * FROM users WHERE email = ?
+DB --> Auth -- : user row
 Auth -> Auth : bcrypt.compare(password, hash)
 Auth -> Auth : sign JWT {sub, email, role} (exp 1h)
-Auth --> Client : 200 OK { token, user }
+Auth --> GW -- : 200 OK { token, user }
+GW --> Client -- : 200 OK { token, user }
 @enduml

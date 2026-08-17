@@ -1,0 +1,77 @@
+@startuml 09_component
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam component {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+}
+skinparam interface {
+  BackgroundColor white
+  BorderColor #26215C
+  FontColor #26215C
+}
+skinparam database {
+  BackgroundColor #1D9E75
+  BorderColor #17805F
+  FontColor white
+}
+skinparam queue {
+  BackgroundColor #1D9E75
+  BorderColor #17805F
+  FontColor white
+}
+skinparam actor {
+  BorderColor #26215C
+  FontColor #26215C
+}
+skinparam package {
+  BorderColor #9C97C7
+  FontColor #26215C
+  BackgroundColor white
+}
+skinparam note {
+  BackgroundColor #FBF0E2
+  BorderColor #B75E09
+}
+
+actor Browser
+
+() "Gateway API\n/api/v1/**" as IGW
+
+package "SmartSchool System" {
+  component "React Frontend"  as FE
+  component "API Gateway"     as GW
+  component "Auth Service"    as Auth
+  component "Academic Service" as Acad
+  component "Finance Service" as Fin
+}
+
+database "MySQL 8\n(smartschool)" as DB
+queue "RabbitMQ\nschool_events" as MQ
+
+Browser --> FE : HTTPS
+FE ..> IGW : uses
+IGW -- GW
+
+GW ..> Auth : requireAuth,\nproxy
+GW ..> Acad : requireAuth,\nproxy
+GW ..> Fin  : requireAuth,\nproxy
+
+Auth ..> DB : mysql2 pool
+Acad ..> DB : mysql2 pool
+Fin  ..> DB : mysql2 pool
+
+Acad ..> MQ : publish\nenrollment.created
+MQ   ..> Fin : deliver
+
+note bottom of GW
+  Only the Gateway is published to
+  the host. Auth, Academic and
+  Finance Services are reachable
+  only from inside the Docker
+  network.
+end note
+@enduml

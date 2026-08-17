@@ -10,44 +10,47 @@ skinparam activity {
   DiamondBackgroundColor #FBF0E2
   DiamondBorderColor #B75E09
 }
+skinparam swimlane {
+  BorderColor #26215C
+  TitleBackgroundColor #3C3489
+  TitleFontColor white
+}
 
+|Student|
 start
-:Student selects a course;
+:Select a course;
 :Submit POST /api/v1/enrollments;
 
+|Academic Service|
 if (Already enrolled in this course?) then (yes)
-  :Return 409 Conflict;
+  |Student|
+  :Receive 409 Conflict;
   stop
 else (no)
+  |Academic Service|
   :Insert enrollment row;
   :Commit transaction to MySQL;
 
   fork
-    :Return 201 Created to Student;
-    stop
+    :Return 201 Created;
+    |Student|
+    :Enrollment confirmed;
   fork again
-    :Publish "enrollment.created"\nto RabbitMQ (persistent);
-    if (Broker reachable?) then (no)
-      :Log warning, swallow error;
-      note right
-        Enrollment was already
-        committed -- it is never
-        rolled back because of a
-        broker failure.
-      end note
-    else (yes)
-      :Message queued durably;
-    endif
+    |Academic Service|
+    :Publish "enrollment.created"\n(persistent, fire-and-forget);
 
-    :Finance Service consumes the\nevent whenever it is ready;
+    |RabbitMQ|
+    :Queue message durably\nin school_events exchange;
 
+    |Finance Service|
+    :Consume event whenever ready;
     if (Invoice already exists\nfor this enrollment?) then (yes)
       :Acknowledge message, no-op;
     else (no)
       :Insert invoice\n(status = pending, amount = fee snapshot);
       :Acknowledge message;
     endif
-    stop
   end fork
+  stop
 endif
 @enduml

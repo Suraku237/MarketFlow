@@ -1,5 +1,4 @@
 @startuml 01_usecase
-left to right direction
 skinparam backgroundColor white
 skinparam shadowing false
 skinparam defaultFontName Helvetica
@@ -19,42 +18,66 @@ skinparam rectangle {
   FontColor #26215C
   FontStyle bold
 }
+skinparam note {
+  BackgroundColor #FBF0E2
+  BorderColor #B75E09
+}
 
+' ---------- Primary (human) actors -- left ----------
 actor Admin
 actor Teacher
 actor Student
 
 rectangle "SmartSchool System" {
-  usecase "Register / Log In" as UC1
-  usecase "Manage Courses\n(create course)" as UC2
-  usecase "Enroll in a Course" as UC3
-  usecase "Record a Grade" as UC4
-  usecase "View Grades" as UC5
-  usecase "View Invoices" as UC6
-  usecase "View Academic\nReports" as UC7
+  usecase "Register"                 as UC_REG
+  usecase "Log In"                   as UC_LOGIN
+  usecase "Manage Courses"           as UC_COURSE
+  usecase "Enroll in a Course"       as UC_ENROLL
+  usecase "Record a Grade"           as UC_GRADE
+  usecase "View Grades"              as UC_VIEWGRADE
+  usecase "View Academic\nReports"   as UC_REPORT
+  usecase "View Invoices"            as UC_INVOICE
+  usecase "Create Invoice\n(async)"  as UC_CREATEINV
 }
 
-Admin --> UC1
-Admin --> UC2
-Admin --> UC3
-Admin --> UC7
+' ---------- Secondary (system) actor -- right ----------
+actor "Message Broker\n(RabbitMQ)" as Broker
 
-Teacher --> UC1
-Teacher --> UC4
-Teacher --> UC7
+' ---------- Primary actor associations ----------
+Admin --> UC_REG
+Admin --> UC_LOGIN
+Admin --> UC_COURSE
+Admin --> UC_ENROLL
+Admin --> UC_REPORT
 
-Student --> UC1
-Student --> UC3
-Student --> UC5
-Student --> UC6
+Teacher --> UC_LOGIN
+Teacher --> UC_REPORT
+Teacher --> UC_GRADE
 
-UC3 .> UC6 : <<triggers>>\n(async, via RabbitMQ)
+Student --> UC_REG
+Student --> UC_LOGIN
+Student --> UC_ENROLL
+Student --> UC_VIEWGRADE
+Student --> UC_INVOICE
 
-note bottom of UC6
-  Invoices are never created by a
-  direct call from a use case; they
-  are created by finance-service
-  reacting to an enrollment.created
-  event.
+' ---------- Secondary actor association ----------
+UC_CREATEINV -- Broker
+
+' ---------- <<include>>: base use case ..> included use case ----------
+UC_COURSE  ..> UC_LOGIN : <<include>>
+UC_ENROLL  ..> UC_LOGIN : <<include>>
+UC_GRADE   ..> UC_LOGIN : <<include>>
+UC_REPORT  ..> UC_LOGIN : <<include>>
+UC_VIEWGRADE ..> UC_LOGIN : <<include>>
+UC_INVOICE ..> UC_LOGIN : <<include>>
+
+' ---------- <<extend>>: extending use case ..> base use case ----------
+UC_CREATEINV ..> UC_ENROLL : <<extend>>
+
+note bottom of UC_CREATEINV
+  Extension, not a direct call: Finance
+  Service creates this invoice by reacting
+  to the enrollment.created event, using
+  the Message Broker as an intermediary.
 end note
 @enduml

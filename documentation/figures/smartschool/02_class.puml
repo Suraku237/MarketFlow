@@ -10,15 +10,14 @@ skinparam class {
   FontColor #26215C
   HeaderBackgroundColor #3C3489
 }
+skinparam note {
+  BackgroundColor #FBF0E2
+  BorderColor #B75E09
+}
 hide circle
 hide empty members
 
-enum Role {
-  admin
-  teacher
-  student
-}
-
+' ---------- Enumerations (value types, not modelled via inheritance) ----------
 enum EnrollmentStatus {
   active
   completed
@@ -38,27 +37,48 @@ enum AssessmentType {
   final
 }
 
-class User {
+' ---------- Abstraction: abstract base class + interface ----------
+abstract class Person {
   +id: int
   +name: string
   +email: string
-  -passwordHash: string
-  +role: Role
   +createdAt: datetime
   --
-  +register(name, email, password, role): User
-  +login(email, password): JWT
+  +{abstract} authenticate(password): boolean
+}
+
+interface Payable {
+  +pay(): void
+  +status(): string
+}
+
+' ---------- Inheritance ----------
+class Admin {
+  --
+  +createCourse(...): Course
+  +createPayrollRun(period): PayrollRun
+}
+
+class Teacher {
+  --
+  +recordGrade(enrollmentId, type, score): Grade
 }
 
 class Student {
-  +id: int
   +admissionNumber: string
   +dateOfBirth: date
   +guardianName: string
   +guardianPhone: string
   +enrolledOn: date
+  --
+  +enroll(courseId): Enrollment
 }
 
+Person <|-- Admin
+Person <|-- Teacher
+Person <|-- Student
+
+' ---------- Plain classes ----------
 class Course {
   +id: int
   +code: string
@@ -66,16 +86,12 @@ class Course {
   +credits: int
   +feeAmount: decimal
   +term: string
-  --
-  +create(code, name, teacherId, fee): Course
 }
 
 class Enrollment {
   +id: int
   +status: EnrollmentStatus
   +enrolledAt: datetime
-  --
-  +enroll(studentId, courseId): Enrollment
 }
 
 class Grade {
@@ -83,8 +99,6 @@ class Grade {
   +assessmentType: AssessmentType
   +score: decimal
   +recordedAt: datetime
-  --
-  +record(enrollmentId, type, score): Grade
 }
 
 class Invoice {
@@ -95,8 +109,6 @@ class Invoice {
   +status: InvoiceStatus
   +issuedAt: datetime
   +paidAt: datetime
-  --
-  +createFromEnrollment(event): Invoice
 }
 
 class PayrollRun {
@@ -116,18 +128,44 @@ class Payslip {
   +status: string
 }
 
-User "1" -- "0..1" Student : has profile >
-User "1" -- "0..*" Course : teaches >
-User "1" -- "0..*" Grade : records >
-User "1" -- "0..*" PayrollRun : creates >
-User "1" -- "0..*" Payslip : receives >
+' ---------- Abstraction: realization ----------
+Invoice ..|> Payable
+Payslip ..|> Payable
 
-Student "1" -- "0..*" Enrollment
-Course "1" -- "0..*" Enrollment
-Enrollment "1" -- "0..*" Grade
-Student "1" -- "0..*" Invoice
-Enrollment "1" -- "1" Invoice
-PayrollRun "1" -- "0..*" Payslip
+' ---------- Associations ----------
+Teacher  "1" --  "0..*" Course     : teaches >
+Teacher  "1" --  "0..*" Grade      : records >
+Admin    "1" --  "0..*" PayrollRun : creates >
+Person   "1" --  "0..*" Payslip    : receives >
+
+' ---------- Composition (filled diamond -- part cannot outlive the whole) ----------
+Student    "1" *-- "0..*" Enrollment : owns
+Enrollment "1" *-- "0..*" Grade      : contains
+Enrollment "1" *-- "0..1" Invoice    : generates
+
+' ---------- Aggregation (hollow diamond -- part can exist / be reassigned independently) ----------
+Course     "1" o-- "0..*" Enrollment : has roster
+PayrollRun "1" o-- "0..*" Payslip    : contains
+
+note top of Person
+  <b>Abstraction + Inheritance.</b>
+  Admin, Teacher and Student all
+  specialize Person. The physical
+  schema implements this hierarchy
+  as a single "users" table with a
+  "role" discriminator column
+  (single-table inheritance) rather
+  than one table per subclass --
+  see the ERD (Section 4.1).
+end note
+
+note bottom of Payable
+  <b>Abstraction via interface.</b>
+  Invoice and Payslip both realize
+  Payable so a future reconciliation
+  workflow (Week 5/6) can treat both
+  polymorphically.
+end note
 
 note right of Invoice
   amount is a fee snapshot taken

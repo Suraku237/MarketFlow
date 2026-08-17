@@ -194,12 +194,66 @@ rather than duplicated per module.
 See the SRS (Section 1.3) for the full glossary; the same terms apply here.
 
 \section{Document Overview}
-Chapter~2 gives the system architecture. Chapter~3 presents the use-case
-model. Chapter~4 presents the static structure (data model / ER diagram).
-Chapter~5 presents dynamic behaviour through sequence and state diagrams.
-Chapter~6 documents the API design. Chapter~7 covers security. Chapter~8
-covers performance and reliability. Chapter~9 covers deployment. Chapter~10
-lists planned work for Weeks 5--6.
+Chapter~2 gives the system architecture (component diagram). Chapter~3
+presents the use-case model (use case diagram). Chapter~4 presents the
+static structure (ER diagram and UML class diagram). Chapter~5 presents
+dynamic behaviour (three sequence diagrams, a state diagram, an activity
+diagram, and an object diagram). Chapter~6 documents the API design.
+Chapter~7 covers security. Chapter~8 covers performance and reliability.
+Chapter~9 covers deployment. Chapter~10 lists planned work for Weeks 5--6.
+All eight UML diagrams (every one except the ER diagram, which uses ER
+notation rather than UML) are generated from PlantUML source files under
+\texttt{documentation/figures/smartschool/}, so the diagram and the text
+describing it can never silently drift apart -- regenerating a figure is a
+one-line command, not a manual redraw.
+
+\section{Notation Used in This Document}
+Every diagram in this document uses standard UML notation, drawn at full
+strength (activation bars, guard conditions, composition/aggregation,
+\texttt{<<include>>}/\texttt{<<extend>>}, swimlanes) rather than a
+simplified subset. Table~\ref{tab:notation} is a single reference point for
+every symbol used, so each diagram's own section can focus on what it shows
+about \sysname{} specifically, not on re-explaining UML itself.
+
+\begin{longtable}{L{3.0cm} L{6.4cm} L{4.6cm}}
+\caption{UML and ER notation used throughout this document.}
+\label{tab:notation} \\
+\toprule
+\textbf{Symbol} & \textbf{Meaning} & \textbf{Appears in} \\
+\midrule
+\endhead
+Stick-figure actor & A human role (primary) interacting with the system & Use case diagram \\
+Actor icon outside the system box, to the right & A \emph{secondary} actor: a supporting, non-human system the use case depends on, never the initiator & Use case diagram \\
+Oval & A use case: one discrete unit of system behaviour & Use case diagram \\
+Dashed arrow, \texttt{<<include>>} & Base use case \emph{always} incorporates the target use case's behaviour (arrow points to the included one) & Use case diagram \\
+Dashed arrow, \texttt{<<extend>>} & The \emph{source} use case optionally adds behaviour to the target base use case, under a condition (arrow points to the base) & Use case diagram \\
+Box, 3 compartments & A class: name, attributes, operations & Class diagram \\
+Italic name/operation & Abstract class or abstract operation -- cannot be instantiated / has no body & Class diagram \\
+\texttt{<<interface>>} stereotype & A contract with operations but no attributes or implementation & Class diagram \\
+Hollow triangle, solid line & Inheritance / generalization (``is-a'') & Class diagram \\
+Hollow triangle, dashed line & Realization -- a class implements an interface & Class diagram \\
+Filled diamond & Composition -- the part's lifecycle is bound to the whole & Class, object diagrams \\
+Hollow diamond & Aggregation -- a weaker ``has-a''; the part can outlive or be reassigned from the whole & Class, object diagrams \\
+Plain line + multiplicity & Association, with how many instances relate on each end & Class, object diagrams \\
+Underlined \texttt{name : Class} & An object diagram node: one specific instance, not a type & Object diagram \\
+Box with plug icon & A component: a replaceable, encapsulated unit of implementation & Component diagram \\
+Circle (``lollipop'') & A provided interface -- what a component offers & Component diagram \\
+Dashed arrow, open head & A required interface or a dependency -- what a component needs & Component diagram \\
+Vertical dashed line & A lifeline: one participant's timeline, top to bottom & Sequence diagrams \\
+Solid arrow, filled head & A synchronous call -- the caller waits for a reply & Sequence diagrams \\
+Solid arrow, open head & An asynchronous message -- the sender does not wait & Sequence diagrams \\
+Dashed arrow & A return / reply message & Sequence diagrams \\
+Narrow rectangle on a lifeline & Activation bar: the participant is actively processing for that span & Sequence diagrams \\
+\texttt{alt} / \texttt{else} frame & Alternative fragments -- mutually exclusive branches & Sequence diagrams \\
+Rounded rectangle & An action (one step) & Activity diagram \\
+Diamond & A decision (one incoming, multiple guarded outgoing) or merge (multiple incoming, one outgoing) & Activity diagram \\
+Solid horizontal bar & Fork (splits into concurrent flows) or join (synchronizes them back) & Activity diagram \\
+Vertical column with a header & A swimlane -- which participant owns each action beneath it & Activity diagram \\
+Filled circle / bordered filled circle & Initial node / activity-final node & Activity diagram \\
+Rounded rectangle (state diagram) & A state, optionally with \texttt{entry}/\texttt{exit}/\texttt{do} actions & State diagram \\
+\texttt{event [guard] / effect} & On a transition: what triggers it, the condition that must hold, and the side effect it causes & State diagram \\
+\bottomrule
+\end{longtable}
 
 \section{Group Contributions}
 \begin{center}
@@ -235,39 +289,19 @@ to Finance Service's availability or latency.
 \end{infobox}
 
 \section{Component Diagram}
-Figure~\ref{fig:arch} shows every running component and how requests and
-events flow between them.
+Figure~\ref{fig:arch} is a standard UML component diagram (notation key in
+Table~\ref{tab:notation}) rather than a generic box-and-arrow sketch:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Package boundary} -- the five components that make up \sysname{} itself (\texttt{React Frontend}, \texttt{API Gateway}, \texttt{Auth Service}, \texttt{Academic Service}, \texttt{Finance Service}) are grouped inside one package, visually separating ``the system'' from the external \texttt{Browser} actor and the two infrastructure nodes (\texttt{MySQL}, \texttt{RabbitMQ}).
+  \item \textbf{Provided interface (lollipop)} -- \texttt{Gateway API /api/v1/**} is the \emph{only} interface exposed outside the package; the Frontend depends on it with a dashed arrow (a \emph{required} interface / dependency), and nothing outside the package can reach \texttt{Auth Service}, \texttt{Academic Service}, or \texttt{Finance Service} directly -- there is deliberately no lollipop on any of them.
+  \item \textbf{Dependency arrows (dashed, open arrowhead)} -- every ``requires'' relationship: the Gateway on all three backend services (\texttt{requireAuth, proxy}), each service on MySQL (\texttt{mysql2 pool}), and the asynchronous publish/deliver pair through RabbitMQ.
+  \item \textbf{Database and queue nodes} -- \texttt{MySQL} and \texttt{RabbitMQ} use their dedicated UML node shapes rather than generic components, since they are infrastructure the components depend on, not components of \sysname{} itself.
+\end{itemize}
 
 \begin{figure}[h!]
 \centering
-\begin{tikzpicture}[node distance=0.9cm and 1.3cm]
-
-  \node[ext] (browser) {React Frontend\\[1pt]\footnotesize (browser, :5173)};
-
-  \node[gwcomp, right=2.2cm of browser] (gw) {API Gateway\\[1pt]\footnotesize (:8081 $\to$ :8080)};
-
-  \node[comp, above right=0.3cm and 1.8cm of gw] (auth) {Auth Service\\[1pt]\footnotesize (:3000)};
-  \node[comp, right=1.8cm of gw] (acad) {Academic Service\\[1pt]\footnotesize (:4000)};
-  \node[comp, below right=0.3cm and 1.8cm of gw] (fin) {Finance Service\\[1pt]\footnotesize (:4001)};
-
-  \node[store, right=2.4cm of acad] (mq) {RabbitMQ\\[1pt]\footnotesize school\_events};
-
-  \node[store, below=1.5cm of gw] (db) {MySQL 8\\[1pt]\footnotesize smartschool};
-
-  \draw[flow] (browser) -- node[above,font=\scriptsize]{HTTPS/REST + JWT} (gw);
-  \draw[flow] (gw) -- (auth);
-  \draw[flow] (gw) -- (acad);
-  \draw[flow] (gw) -- (fin);
-
-  \draw[flow] (auth) -- (db);
-  \draw[flow] (acad) -- (db);
-  \draw[flow] (fin) -- (db);
-
-  \draw[asyncflow] (acad) -- node[above,font=\scriptsize]{publish} (mq);
-  \draw[asyncflow] (mq) -- node[below,font=\scriptsize]{consume} (fin);
-
-\end{tikzpicture}
-\caption{Component diagram: solid arrows are synchronous HTTP/SQL calls, dashed green arrows are asynchronous AMQP messages via RabbitMQ.}
+\includegraphics[width=0.95\linewidth]{figures/smartschool/09_component.png}
+\caption{UML component diagram for \sysname{}: the Gateway is the only component with a provided interface reachable from outside the system package; every other dependency is internal (PlantUML source: \texttt{figures/smartschool/09\_component.puml})}
 \label{fig:arch}
 \end{figure}
 
@@ -292,24 +326,32 @@ React Frontend & Single-page application (Vite + React). Holds the JWT and user 
 
 \section{Actors}
 \begin{center}
-\begin{tabular}{@{}p{2.6cm}p{11.4cm}@{}}
+\begin{tabular}{@{}p{2.6cm}p{2.6cm}p{8.8cm}@{}}
 \toprule
-\textbf{Actor} & \textbf{Description} \\
+\textbf{Actor} & \textbf{Kind} & \textbf{Description} \\
 \midrule
-Admin & Creates courses, enrolls students on their behalf, views reports; highest privilege. \\
-Teacher & Records grades for courses they teach; views reports alongside Admin. \\
-Student & Registers, logs in, enrolls in courses, views their own enrollments, grades, and invoices. \\
+Admin & Primary & Creates courses, enrolls students on their behalf, views reports; highest privilege. \\
+Teacher & Primary & Records grades for courses they teach; views reports alongside Admin. \\
+Student & Primary & Registers, logs in, enrolls in courses, views their own enrollments, grades, and invoices. \\
+Message Broker (RabbitMQ) & Secondary & Non-human, supporting actor: carries the \texttt{enrollment.created} event that drives asynchronous invoice creation. Never initiates a use case itself; supports one. \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \section{Use Case Diagram}
-Figure~\ref{fig:usecase} shows the actors and the use cases each participates in.
+Figure~\ref{fig:usecase} shows the three primary (human) actors, the
+secondary (system) actor positioned on the right per UML convention, and
+the full use case set with explicit \texttt{<<include>>} and
+\texttt{<<extend>>} relationships:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{\texttt{<<include>>}} (arrow from base use case to included use case): every functional use case includes \emph{Log In} -- it is a mandatory precondition, factored out once rather than repeated on each use case.
+  \item \textbf{\texttt{<<extend>>}} (arrow from extending use case to base use case): \emph{Create Invoice (async)} extends \emph{Enroll in a Course} -- it is optional, conditional behaviour (only fires once the event is consumed) rather than a step the base use case always performs itself.
+\end{itemize}
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.4\linewidth]{figures/smartschool/01_usecase.png}
-\caption{Use case diagram for \sysname{} (PlantUML source: \texttt{figures/smartschool/01\_usecase.puml})}
+\includegraphics[width=0.95\linewidth]{figures/smartschool/01_usecase.png}
+\caption{Use case diagram for \sysname{}: primary actors, the Message Broker as a secondary actor, and \texttt{<<include>>}/\texttt{<<extend>>} relationships (PlantUML source: \texttt{figures/smartschool/01\_usecase.puml})}
 \label{fig:usecase}
 \end{figure}
 
@@ -416,14 +458,22 @@ exam's 2-index minimum.
 Where Figure~\ref{fig:erd} above is a \emph{database-oriented} ER diagram
 (tables, columns, keys), Figure~\ref{fig:class} is the corresponding
 \emph{UML class diagram}: the same domain model expressed as classes with
-typed attributes, key operations, enumerations, and UML association
-multiplicities, matching the code's object shape rather than its storage
-shape.
+typed attributes, key operations, enumerations, and every relationship kind
+the UML metamodel distinguishes:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Abstraction} -- \texttt{Person} is an abstract class (italicized, with an abstract operation); \texttt{Payable} is an interface realized by two unrelated classes.
+  \item \textbf{Inheritance} (hollow triangle) -- \texttt{Admin}, \texttt{Teacher}, and \texttt{Student} all specialize \texttt{Person}.
+  \item \textbf{Realization} (dashed hollow triangle) -- \texttt{Invoice} and \texttt{Payslip} both realize \texttt{Payable}.
+  \item \textbf{Composition} (filled diamond) -- \texttt{Student *-- Enrollment}, \texttt{Enrollment *-- Grade}, \texttt{Enrollment *-- Invoice}: the part cannot outlive the whole.
+  \item \textbf{Aggregation} (hollow diamond) -- \texttt{Course o-- Enrollment}, \texttt{PayrollRun o-- Payslip}: a weaker ``has-a'' where the part's lifecycle is not strictly bound to the whole.
+  \item \textbf{Plain association} with multiplicities -- e.g. \texttt{Teacher -- Course}, \texttt{Admin -- PayrollRun}.
+\end{itemize}
+This is a \emph{logical/OOP} view; the physical schema (Figure~\ref{fig:erd}) implements the \texttt{Person} hierarchy as a single \texttt{users} table with a \texttt{role} discriminator column (single-table inheritance) rather than one table per subclass, as noted on the diagram itself.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/smartschool/02_class.png}
-\caption{UML class diagram for \sysname{} (PlantUML source: \texttt{figures/smartschool/02\_class.puml})}
+\caption{UML class diagram for \sysname{}, demonstrating abstraction, inheritance, realization, composition, and aggregation (PlantUML source: \texttt{figures/smartschool/02\_class.puml})}
 \label{fig:class}
 \end{figure}
 
@@ -431,23 +481,32 @@ shape.
 \chapter{Dynamic Behaviour}
 
 \section{Sequence Diagram: Registration and Login}
-Figure~\ref{fig:seq-auth} traces account creation and authentication.
+Figure~\ref{fig:seq-auth} traces account creation and authentication. Every
+lifeline carries an explicit \textbf{activation bar}: it is drawn active
+only for the span between receiving a call and sending its reply, so nested
+calls (Gateway waiting on Auth Service, Auth Service waiting on MySQL) are
+visually unambiguous.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/smartschool/03_seq_auth.png}
-\caption{Sequence diagram: registration and login (PlantUML source: \texttt{figures/smartschool/03\_seq\_auth.puml})}
+\caption{Sequence diagram: registration and login, with activation bars on every lifeline (PlantUML source: \texttt{figures/smartschool/03\_seq\_auth.puml})}
 \label{fig:seq-auth}
 \end{figure}
 
 \section{Sequence Diagram: Enroll in a Course (Async Invoice Creation)}
 Figure~\ref{fig:seq-enroll} shows the central asynchronous workflow: the
-Academic Service never waits for the Finance Service.
+Academic Service never waits for the Finance Service. Note where Academic
+Service's activation bar ends -- \emph{before} the ``later, independently''
+separator -- versus Finance Service's activation bar, which only opens once
+RabbitMQ delivers the message, well after the Student already has a
+response. The publish and deliver arrows use the open (async) arrowhead,
+not the filled synchronous one.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/smartschool/04_seq_enrollment_invoice.png}
-\caption{Sequence diagram: enrollment triggers asynchronous invoice creation (PlantUML source: \texttt{figures/smartschool/04\_seq\_enrollment\_invoice.puml})}
+\caption{Sequence diagram: enrollment triggers asynchronous invoice creation, with activation bars showing exactly when each participant is doing work (PlantUML source: \texttt{figures/smartschool/04\_seq\_enrollment\_invoice.puml})}
 \label{fig:seq-enroll}
 \end{figure}
 
@@ -456,54 +515,67 @@ Academic Service never waits for the Finance Service.
 Figure~\ref{fig:seq-grade} shows the ownership check that restricts a
 Teacher to grading only the courses they teach, enforced independently by
 Academic Service even though the Gateway already confirmed the caller is
-logged in.
+logged in. The \texttt{alt} fragment's two branches each close their own
+activation bars independently, which is standard UML for divergent
+outcomes of a single call.
 
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\linewidth]{figures/smartschool/05_seq_grade.png}
-\caption{Sequence diagram: recording a grade, with teacher-ownership check (PlantUML source: \texttt{figures/smartschool/05\_seq\_grade.puml})}
+\caption{Sequence diagram: recording a grade, with teacher-ownership check and full activation bars (PlantUML source: \texttt{figures/smartschool/05\_seq\_grade.puml})}
 \label{fig:seq-grade}
 \end{figure}
 
 \section{State Transition Diagram: Invoice}
 Figure~\ref{fig:state} shows the lifecycle of an \texttt{invoices.status}
-value. Payment collection (the \texttt{pending} $\rightarrow$ \texttt{paid}
-transition being driven by a real gateway) is planned; today an invoice can
-be created and, if applicable, cancelled, but there is no endpoint yet that
-performs the \texttt{paid} transition.
+value using full UML state-machine notation: each state has an
+\texttt{entry} action, and each outgoing transition carries an explicit
+\textbf{guard condition} in square brackets alongside its triggering event.
+Payment collection (the \texttt{pending} $\rightarrow$ \texttt{paid}
+transition, guarded on \texttt{[gateway integrated]}) is planned; today an
+invoice can be created and, if applicable, cancelled, but there is no
+endpoint yet that performs the \texttt{paid} transition.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.55\linewidth]{figures/smartschool/07_state_invoice.png}
-\caption{State transition diagram: invoice status lifecycle (PlantUML source: \texttt{figures/smartschool/07\_state\_invoice.puml})}
+\includegraphics[width=0.7\linewidth]{figures/smartschool/07_state_invoice.png}
+\caption{State transition diagram: invoice status lifecycle, with entry actions and guard conditions on every transition (PlantUML source: \texttt{figures/smartschool/07\_state\_invoice.puml})}
 \label{fig:state}
 \end{figure}
 
 \section{Activity Diagram: Enrollment-to-Invoice Workflow}
 Figure~\ref{fig:activity} lays out the same enrollment workflow as
 Figure~\ref{fig:seq-enroll}, but as control flow rather than
-inter-participant messaging -- useful for walking the examiner through the
-decision points (duplicate enrollment, broker unavailable, duplicate event
-delivery) rather than the wire messages.
+inter-participant messaging, organized into \textbf{swimlanes} -- one per
+participant (Student, Academic Service, RabbitMQ, Finance Service) -- so
+each action's owner is unambiguous at a glance. The fork explicitly
+rejoins at a single synchronization bar before the shared activity-final
+node, rather than each branch terminating on its own.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.85\linewidth]{figures/smartschool/06_activity_enrollment.png}
-\caption{Activity diagram: enrollment-to-invoice workflow, including the fork into an immediate HTTP response and an independent asynchronous branch (PlantUML source: \texttt{figures/smartschool/06\_activity\_enrollment.puml})}
+\includegraphics[width=\linewidth]{figures/smartschool/06_activity_enrollment.png}
+\caption{Activity diagram: enrollment-to-invoice workflow with swimlanes, a fork into an immediate HTTP response and an independent asynchronous branch, and a single join before the final node (PlantUML source: \texttt{figures/smartschool/06\_activity\_enrollment.puml})}
 \label{fig:activity}
 \end{figure}
 
 \section{Object Diagram: Sample Enrollment Snapshot}
-Figure~\ref{fig:object} is a concrete runtime snapshot -- one specific
-student, course, enrollment, event, and invoice, with real attribute
-values -- as a worked instance of the class diagram in
-Figure~\ref{fig:class}. It uses the same example data as the event contract
-in Chapter~\ref{chap:api-design}, so the two can be read side by side.
+Figure~\ref{fig:object} is a concrete runtime snapshot -- specific
+instances of \texttt{Student}, \texttt{Teacher}, \texttt{Course},
+\texttt{Enrollment}, \texttt{Grade}, and \texttt{Invoice}, with real
+attribute values -- as a worked instantiation of the class diagram in
+Figure~\ref{fig:class}. Every link is labelled with the same role name as
+the corresponding class-diagram relationship (\emph{owns}, \emph{has
+roster}, \emph{contains}, \emph{generates}, \emph{teaches}, \emph{records}),
+so the object diagram can be read as direct proof that the class diagram's
+composition and aggregation relationships hold for real data. It reuses the
+same example as the event contract in Chapter~\ref{chap:api-design}, so the
+two can be read side by side.
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=0.72\linewidth]{figures/smartschool/08_object_snapshot.png}
-\caption{Object diagram: one enrollment, its triggering event, and the resulting invoice (PlantUML source: \texttt{figures/smartschool/08\_object\_snapshot.puml})}
+\includegraphics[width=0.8\linewidth]{figures/smartschool/08_object_snapshot.png}
+\caption{Object diagram: one enrollment, its triggering event, and the resulting invoice, with links naming the same roles as the class diagram (PlantUML source: \texttt{figures/smartschool/08\_object\_snapshot.puml})}
 \label{fig:object}
 \end{figure}
 

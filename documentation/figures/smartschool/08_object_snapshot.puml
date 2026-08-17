@@ -8,12 +8,22 @@ skinparam object {
   ArrowColor #3C3489
   FontColor #26215C
 }
+skinparam note {
+  BackgroundColor #FBF0E2
+  BorderColor #B75E09
+}
 
 object "ama : Student" as ama {
   id = 3
   admissionNumber = "STU-2026-014"
   name = "Ama Nti"
   email = "ama@smartschool.local"
+}
+
+object "mrLee : Teacher" as mrLee {
+  id = 7
+  name = "Mr. Lee"
+  email = "lee@smartschool.local"
 }
 
 object "sci101 : Course" as sci101 {
@@ -28,6 +38,13 @@ object "enrollment5 : Enrollment" as enr5 {
   id = 5
   status = "active"
   enrolledAt = "2026-08-15T10:00:00Z"
+}
+
+object "grade7 : Grade" as grade7 {
+  id = 7
+  assessmentType = "midterm"
+  score = 78.5
+  recordedAt = "2026-09-20T09:00:00Z"
 }
 
 object "event : DomainEvent" as evt {
@@ -46,18 +63,32 @@ object "invoice12 : Invoice" as inv12 {
   issuedAt = "2026-08-15T10:00:04Z"
 }
 
-ama "1" -- "1" enr5
-sci101 "1" -- "1" enr5
-enr5 ..> evt : publishes >
-evt ..> inv12 : consumed, creates >
-enr5 "1" -- "1" inv12
+' ---------- links mirror the composition / aggregation / association ----------
+' ---------- edges declared in the class diagram (Figure 4.2) -------------
+ama    "1" -- "1" enr5    : owns >
+sci101 "1" -- "1" enr5    : has roster >
+mrLee  "1" -- "1" sci101  : teaches >
+mrLee  "1" -- "1" grade7  : records >
+enr5   "1" -- "1" grade7  : contains >
+enr5   "1" -- "1" inv12   : generates >
+
+enr5 ..> evt   : publishes >
+evt  ..> inv12 : consumed, creates >
 
 note bottom of inv12
-  This is exactly the concrete
-  instance data used as the worked
-  example in the event contract
-  (Chapter 6) -- one enrollment,
-  one event, one invoice, all
+  This is exactly the concrete instance
+  data used as the worked example in the
+  event contract (Chapter 6) -- one
+  enrollment, one event, one invoice, all
   traceable to each other.
+end note
+
+note top of ama
+  Every link here is a live instance of a
+  relationship from the class diagram
+  (Figure 4.2): composition (owns,
+  contains, generates), aggregation (has
+  roster), and plain association
+  (teaches, records).
 end note
 @enduml

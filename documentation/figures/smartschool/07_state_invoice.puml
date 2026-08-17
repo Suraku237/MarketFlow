@@ -8,18 +8,38 @@ skinparam state {
   ArrowColor #3C3489
   FontColor #26215C
 }
+skinparam note {
+  BackgroundColor #FBF0E2
+  BorderColor #B75E09
+}
 
-[*] --> pending : enrollment.created consumed\n(invoice row inserted)
-pending --> paid : payment confirmed\n<b>(planned -- Week 5/6)</b>
-pending --> cancelled : enrollment dropped /\ninvoice voided <b>(planned)</b>
+[*] --> pending : enrollment.created consumed
+
+state pending {
+  pending : entry / INSERT invoice row\n(amount = fee snapshot, method = momo)
+  pending : do / await payment confirmation
+}
+
+state paid {
+  paid : entry / set paidAt = now()
+  paid : entry / notify student
+}
+
+state cancelled {
+  cancelled : entry / release fee snapshot
+}
+
+pending --> paid     : paymentConfirmed(ref) [gateway integrated]
+pending --> cancelled : enrollmentDropped()  [invoice not yet paid]
 paid --> [*]
 cancelled --> [*]
 
 note right of pending
   Current implementation stops here:
   every invoice created by the async
-  consumer is left in "pending".
-  No endpoint yet performs the
-  pending -> paid transition.
+  consumer is left in "pending". Both
+  guarded transitions below are
+  planned (Week 5/6) once a payment
+  gateway is integrated.
 end note
 @enduml
