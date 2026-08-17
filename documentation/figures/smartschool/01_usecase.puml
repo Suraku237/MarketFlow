@@ -1,0 +1,60 @@
+@startuml 01_usecase
+left to right direction
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam actorStyle awesome
+skinparam usecase {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+}
+skinparam actor {
+  BorderColor #26215C
+  FontColor #26215C
+}
+skinparam rectangle {
+  BorderColor #26215C
+  FontColor #26215C
+  FontStyle bold
+}
+
+actor Admin
+actor Teacher
+actor Student
+
+rectangle "SmartSchool System" {
+  usecase "Register / Log In" as UC1
+  usecase "Manage Courses\n(create course)" as UC2
+  usecase "Enroll in a Course" as UC3
+  usecase "Record a Grade" as UC4
+  usecase "View Grades" as UC5
+  usecase "View Invoices" as UC6
+  usecase "View Academic\nReports" as UC7
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC7
+
+Teacher --> UC1
+Teacher --> UC4
+Teacher --> UC7
+
+Student --> UC1
+Student --> UC3
+Student --> UC5
+Student --> UC6
+
+UC3 .> UC6 : <<triggers>>\n(async, via RabbitMQ)
+
+note bottom of UC6
+  Invoices are never created by a
+  direct call from a use case; they
+  are created by finance-service
+  reacting to an enrollment.created
+  event.
+end note
+@enduml

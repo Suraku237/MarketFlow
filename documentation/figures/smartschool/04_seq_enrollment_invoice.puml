@@ -1,0 +1,57 @@
+@startuml 04_seq_enrollment_invoice
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam sequence {
+  ArrowColor #3C3489
+  LifeLineBorderColor #26215C
+  ParticipantBorderColor #26215C
+  ParticipantBackgroundColor #F1EFE8
+  ParticipantFontColor #26215C
+  ActorBorderColor #26215C
+  ActorBackgroundColor #F1EFE8
+}
+skinparam queue {
+  BackgroundColor #1D9E75
+  BorderColor #17805F
+  FontColor white
+}
+
+actor Student
+participant "Gateway" as GW
+participant "Academic\nService" as Academic
+database "MySQL" as DB
+queue "RabbitMQ\nschool_events" as MQ
+participant "Finance\nService" as Finance
+
+Student -> GW : POST /api/v1/enrollments
+GW -> GW : verify JWT signature + expiry
+GW -> Academic : forward
+Academic -> DB : INSERT INTO enrollments(student_id, course_id)
+DB --> Academic : enrollment row (committed)
+Academic -> MQ : publish "enrollment.created"\n(persistent, fire-and-forget)
+Academic --> Student : 201 Created
+note right of Academic
+  Response already sent -- Academic
+  Service never waits on RabbitMQ
+  or Finance Service.
+end note
+
+...later, independently...
+
+MQ -> Finance : deliver "enrollment.created"
+Finance -> DB : INSERT INTO invoices\n(student_id, enrollment_id, amount)
+alt enrollment_id already has an invoice (redelivery)
+  DB --> Finance : ER_DUP_ENTRY
+  Finance -> Finance : treat as successful no-op
+else first delivery
+  DB --> Finance : invoice row (status = pending)
+end
+Finance -> MQ : ack
+
+Student -> GW : GET /api/v1/finance/invoices
+GW -> Finance : forward
+Finance -> DB : SELECT * FROM invoices WHERE student_id = ?
+DB --> Finance : rows
+Finance --> Student : 200 OK { invoices: [...] }
+@enduml

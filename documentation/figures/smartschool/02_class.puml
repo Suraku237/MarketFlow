@@ -1,0 +1,145 @@
+@startuml 02_class
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam classAttributeIconSize 0
+skinparam class {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+  HeaderBackgroundColor #3C3489
+}
+hide circle
+hide empty members
+
+enum Role {
+  admin
+  teacher
+  student
+}
+
+enum EnrollmentStatus {
+  active
+  completed
+  dropped
+}
+
+enum InvoiceStatus {
+  pending
+  paid
+  cancelled
+}
+
+enum AssessmentType {
+  quiz
+  assignment
+  midterm
+  final
+}
+
+class User {
+  +id: int
+  +name: string
+  +email: string
+  -passwordHash: string
+  +role: Role
+  +createdAt: datetime
+  --
+  +register(name, email, password, role): User
+  +login(email, password): JWT
+}
+
+class Student {
+  +id: int
+  +admissionNumber: string
+  +dateOfBirth: date
+  +guardianName: string
+  +guardianPhone: string
+  +enrolledOn: date
+}
+
+class Course {
+  +id: int
+  +code: string
+  +name: string
+  +credits: int
+  +feeAmount: decimal
+  +term: string
+  --
+  +create(code, name, teacherId, fee): Course
+}
+
+class Enrollment {
+  +id: int
+  +status: EnrollmentStatus
+  +enrolledAt: datetime
+  --
+  +enroll(studentId, courseId): Enrollment
+}
+
+class Grade {
+  +id: int
+  +assessmentType: AssessmentType
+  +score: decimal
+  +recordedAt: datetime
+  --
+  +record(enrollmentId, type, score): Grade
+}
+
+class Invoice {
+  +id: int
+  +amount: decimal
+  +momoReference: string
+  +method: string
+  +status: InvoiceStatus
+  +issuedAt: datetime
+  +paidAt: datetime
+  --
+  +createFromEnrollment(event): Invoice
+}
+
+class PayrollRun {
+  +id: int
+  +periodStart: date
+  +periodEnd: date
+  +status: string
+  +runDate: datetime
+}
+
+class Payslip {
+  +id: int
+  +baseSalary: decimal
+  +deductions: decimal
+  +netPay: decimal
+  +momoReference: string
+  +status: string
+}
+
+User "1" -- "0..1" Student : has profile >
+User "1" -- "0..*" Course : teaches >
+User "1" -- "0..*" Grade : records >
+User "1" -- "0..*" PayrollRun : creates >
+User "1" -- "0..*" Payslip : receives >
+
+Student "1" -- "0..*" Enrollment
+Course "1" -- "0..*" Enrollment
+Enrollment "1" -- "0..*" Grade
+Student "1" -- "0..*" Invoice
+Enrollment "1" -- "1" Invoice
+PayrollRun "1" -- "0..*" Payslip
+
+note right of Invoice
+  amount is a fee snapshot taken
+  at enrollment time, not a live
+  reference to Course::feeAmount --
+  a later fee change never alters
+  an already-issued invoice.
+end note
+
+note bottom of Payslip
+  Payroll module: data model
+  complete (Week 2), service
+  layer planned for Week 5.
+end note
+@enduml

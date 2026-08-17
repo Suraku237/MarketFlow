@@ -1,0 +1,25 @@
+@startuml 07_state_invoice
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam state {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+}
+
+[*] --> pending : enrollment.created consumed\n(invoice row inserted)
+pending --> paid : payment confirmed\n<b>(planned -- Week 5/6)</b>
+pending --> cancelled : enrollment dropped /\ninvoice voided <b>(planned)</b>
+paid --> [*]
+cancelled --> [*]
+
+note right of pending
+  Current implementation stops here:
+  every invoice created by the async
+  consumer is left in "pending".
+  No endpoint yet performs the
+  pending -> paid transition.
+end note
+@enduml

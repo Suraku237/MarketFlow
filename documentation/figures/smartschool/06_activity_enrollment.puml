@@ -1,0 +1,53 @@
+@startuml 06_activity_enrollment
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam activity {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+  DiamondBackgroundColor #FBF0E2
+  DiamondBorderColor #B75E09
+}
+
+start
+:Student selects a course;
+:Submit POST /api/v1/enrollments;
+
+if (Already enrolled in this course?) then (yes)
+  :Return 409 Conflict;
+  stop
+else (no)
+  :Insert enrollment row;
+  :Commit transaction to MySQL;
+
+  fork
+    :Return 201 Created to Student;
+    stop
+  fork again
+    :Publish "enrollment.created"\nto RabbitMQ (persistent);
+    if (Broker reachable?) then (no)
+      :Log warning, swallow error;
+      note right
+        Enrollment was already
+        committed -- it is never
+        rolled back because of a
+        broker failure.
+      end note
+    else (yes)
+      :Message queued durably;
+    endif
+
+    :Finance Service consumes the\nevent whenever it is ready;
+
+    if (Invoice already exists\nfor this enrollment?) then (yes)
+      :Acknowledge message, no-op;
+    else (no)
+      :Insert invoice\n(status = pending, amount = fee snapshot);
+      :Acknowledge message;
+    endif
+    stop
+  end fork
+endif
+@enduml

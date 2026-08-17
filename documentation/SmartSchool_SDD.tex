@@ -1,0 +1,677 @@
+\documentclass[11pt,a4paper]{report}
+
+% ================= PACKAGES =================
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{fontspec}
+\usepackage{tocloft}
+\usepackage{longtable}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds}
+
+\setmainfont{Latin Modern Sans}[Scale=1.0]
+\setmonofont{Latin Modern Mono}[Scale=0.9]
+
+% ================= COLORS =================
+\definecolor{primary}{HTML}{3C3489}
+\definecolor{primarydark}{HTML}{26215C}
+\definecolor{accent}{HTML}{1D9E75}
+\definecolor{warn}{HTML}{B75E09}
+\definecolor{lightgray}{HTML}{F1EFE8}
+\definecolor{warnbg}{HTML}{FBF0E2}
+\definecolor{bodytext}{HTML}{2C2C2A}
+\definecolor{boxline}{HTML}{9C97C7}
+
+\color{bodytext}
+
+% ================= SECTION STYLING =================
+\titleformat{\chapter}[display]
+  {\normalfont\Huge\bfseries\color{primary}}
+  {\chaptertitlename\ \thechapter}{10pt}{\Huge}
+\titlespacing*{\chapter}{0pt}{0pt}{30pt}
+
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{primarydark}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{primary}}{\thesubsection}{1em}{}
+
+% ================= HEADER / FOOTER =================
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\textcolor{primarydark}{SmartSchool -- School Management ERP}}
+\fancyhead[R]{\small\textcolor{primarydark}{Software Design Document}}
+\fancyfoot[C]{\thepage}
+
+% ================= BOXES =================
+\newtcolorbox{infobox}[1][]{
+  colback=lightgray, colframe=primary, boxrule=0.6pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
+}
+\newtcolorbox{futurebox}[1][]{
+  colback=warnbg, colframe=warn, boxrule=0.6pt, arc=2pt,
+  left=8pt, right=8pt, top=6pt, bottom=6pt, #1
+}
+
+% ================= HYPERREF =================
+\hypersetup{
+  colorlinks=true,
+  linkcolor=primary,
+  citecolor=primary,
+  urlcolor=accent,
+  pdftitle={SmartSchool SDD - SEN4121 Large System Environment},
+  pdfauthor={Group 2 -- ICT University Yaounde}
+}
+
+\captionsetup{font=small,labelfont={bf,color=primary}}
+
+\newcommand{\sysname}{SmartSchool}
+
+% ---- TikZ styles used throughout the diagrams ----
+\tikzset{
+  comp/.style={draw=primary, thick, rounded corners=2pt, fill=lightgray,
+               minimum width=2.6cm, minimum height=1.05cm, align=center,
+               font=\small\bfseries, text=primarydark},
+  gwcomp/.style={comp, fill=primary!12},
+  store/.style={draw=accent, thick, rounded corners=2pt, fill=accent!12,
+               minimum width=2.4cm, minimum height=1.05cm, align=center,
+               font=\small\bfseries, text=primarydark},
+  ext/.style={draw=warn, thick, dashed, rounded corners=2pt, fill=warnbg,
+               minimum width=2.6cm, minimum height=1.0cm, align=center,
+               font=\small, text=primarydark},
+  actorbox/.style={draw=primarydark, thick, rounded corners=6pt, fill=white,
+               minimum width=2.1cm, minimum height=0.9cm, align=center,
+               font=\small\bfseries, text=primarydark},
+  usecase/.style={draw=primary, thick, ellipse, fill=white,
+               minimum width=3.2cm, minimum height=0.95cm, align=center,
+               font=\small, text=bodytext, inner sep=2pt},
+  flow/.style={-Latex, thick, primary},
+  asyncflow/.style={-Latex, thick, accent, dashed},
+  entity/.style={draw=primary, thick, rounded corners=1pt, fill=white,
+               align=left, font=\scriptsize, text=bodytext, inner sep=4pt},
+  entityhead/.style={font=\bfseries\small, text=primarydark},
+  rel/.style={-Latex, thick, boxline},
+}
+
+\begin{document}
+
+% ================= TITLE PAGE =================
+\begin{titlepage}
+\begin{center}
+\vspace*{1.2cm}
+
+{\color{primary}\rule{\linewidth}{2pt}}
+
+\vspace{0.8cm}
+{\Huge\bfseries\color{primary} Software Design Document}
+
+\vspace{0.4cm}
+{\LARGE\color{primarydark} \sysname{} --- Student Records, Fee Invoicing\\[2pt] \& Staff Payroll Management System}
+
+\vspace{0.6cm}
+{\color{primary}\rule{\linewidth}{2pt}}
+
+\vspace{2cm}
+
+{\Large Prepared for: \textbf{ICT University Ya\'ound\'e}}
+
+\vspace{0.3cm}
+{\large Course: \textbf{SEN4121 -- Large System Environment} \quad (Practical Examination, Summer 2026)}
+
+\vspace{0.3cm}
+{\large Examiner: Engr. Tanwi Nkiamboh}
+
+\vspace{1.5cm}
+
+\begin{tabular}{ll}
+\textbf{Document version:} & 1.0 \\[4pt]
+\textbf{Group number:} & Group 2 \\[4pt]
+\textbf{Date:} & \today \\[4pt]
+\textbf{Status:} & Living document -- updated through Week 4 \\
+\end{tabular}
+
+\vspace{1cm}
+
+\begin{tabular}{@{}p{6cm}p{4.5cm}@{}}
+\toprule
+\textbf{Group Member} & \textbf{Matricule} \\
+\midrule
+Kwete Rayan & ICTU20241377 \\
+Kamdeu Yamdjeuson Neil Marshall & ICTU20241386 \\
+Younga Tchappi Dylane & ICTU2241836 \\
+Fru Chi Ehud Neba & ICTU20241812 \\
+\bottomrule
+\end{tabular}
+
+\vfill
+
+{\small\color{bodytext} This document describes the architecture, use cases,
+data model, and behavioural design of \sysname{}, a microservice-based
+school ERP built for the SEN4121 practical examination series. It reflects
+the system as actually implemented through Week 4 (environment/auth,
+database, microservices/gateway, messaging/security/performance), and marks
+Week 5/6 elements explicitly as planned.}
+
+\end{center}
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+% ================================================================
+\chapter{Introduction}
+
+\section{Purpose}
+This Software Design Document (SDD) describes the design of \sysname{}, a
+school ERP built as a set of independently deployable microservices behind
+a single API Gateway. It captures the system's architecture, static
+structure (data model), and dynamic behaviour, and is intended to guide
+implementation, the weekly oral evaluations, and future maintenance.
+
+\section{Scope}
+\sysname{} is organised into three functional modules, mirroring the exam
+brief's Academic / Finance / HR split:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Academic} --- students, courses, enrollments, and grades.
+  \item \textbf{Finance} --- invoices, generated automatically from enrollments.
+  \item \textbf{HR / Payroll} --- staff records and payroll (data model complete; service layer planned for Week 5).
+\end{itemize}
+Cross-cutting concerns -- authentication, the API Gateway, asynchronous
+messaging, and security -- are treated as their own architectural layer
+rather than duplicated per module.
+
+\section{Definitions and Abbreviations}
+See the SRS (Section 1.3) for the full glossary; the same terms apply here.
+
+\section{Document Overview}
+Chapter~2 gives the system architecture. Chapter~3 presents the use-case
+model. Chapter~4 presents the static structure (data model / ER diagram).
+Chapter~5 presents dynamic behaviour through sequence and state diagrams.
+Chapter~6 documents the API design. Chapter~7 covers security. Chapter~8
+covers performance and reliability. Chapter~9 covers deployment. Chapter~10
+lists planned work for Weeks 5--6.
+
+\section{Group Contributions}
+\begin{center}
+\begin{tabular}{@{}p{5cm}p{9cm}@{}}
+\toprule
+\textbf{Group Member} & \textbf{Contribution} \\
+\midrule
+Kwete Rayan & \\[10pt]
+Kamdeu Yamdjeuson Neil Marshall & \\[10pt]
+Younga Tchappi Dylane & \\[10pt]
+Fru Chi Ehud Neba & \\[10pt]
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\chapter{System Architecture}
+
+\section{Architectural Style}
+\sysname{} follows a \textbf{microservice architecture behind an API
+Gateway}: every external client (the React frontend, curl, Postman, the
+examiner) talks only to the Gateway, which is the sole component with a
+port published to the host. Backend services are reachable only from other
+containers on the internal Docker network. This satisfies the Week 3 build
+task directly and gives each module (Academic, Finance) an independent
+deployment and scaling unit.
+
+\begin{infobox}
+\textbf{Design principle.} The Finance Service never receives a direct call
+to create an invoice. It reacts to an \texttt{enrollment.created} event on
+its own schedule, so the Academic Service's request path is never coupled
+to Finance Service's availability or latency.
+\end{infobox}
+
+\section{Component Diagram}
+Figure~\ref{fig:arch} shows every running component and how requests and
+events flow between them.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}[node distance=0.9cm and 1.3cm]
+
+  \node[ext] (browser) {React Frontend\\[1pt]\footnotesize (browser, :5173)};
+
+  \node[gwcomp, right=2.2cm of browser] (gw) {API Gateway\\[1pt]\footnotesize (:8081 $\to$ :8080)};
+
+  \node[comp, above right=0.3cm and 1.8cm of gw] (auth) {Auth Service\\[1pt]\footnotesize (:3000)};
+  \node[comp, right=1.8cm of gw] (acad) {Academic Service\\[1pt]\footnotesize (:4000)};
+  \node[comp, below right=0.3cm and 1.8cm of gw] (fin) {Finance Service\\[1pt]\footnotesize (:4001)};
+
+  \node[store, right=2.4cm of acad] (mq) {RabbitMQ\\[1pt]\footnotesize school\_events};
+
+  \node[store, below=1.5cm of gw] (db) {MySQL 8\\[1pt]\footnotesize smartschool};
+
+  \draw[flow] (browser) -- node[above,font=\scriptsize]{HTTPS/REST + JWT} (gw);
+  \draw[flow] (gw) -- (auth);
+  \draw[flow] (gw) -- (acad);
+  \draw[flow] (gw) -- (fin);
+
+  \draw[flow] (auth) -- (db);
+  \draw[flow] (acad) -- (db);
+  \draw[flow] (fin) -- (db);
+
+  \draw[asyncflow] (acad) -- node[above,font=\scriptsize]{publish} (mq);
+  \draw[asyncflow] (mq) -- node[below,font=\scriptsize]{consume} (fin);
+
+\end{tikzpicture}
+\caption{Component diagram: solid arrows are synchronous HTTP/SQL calls, dashed green arrows are asynchronous AMQP messages via RabbitMQ.}
+\label{fig:arch}
+\end{figure}
+
+\section{Component Responsibilities}
+\begin{longtable}{L{3.0cm} L{11.0cm}}
+\toprule
+\textbf{Component} & \textbf{Responsibility} \\
+\midrule
+\endhead
+API Gateway & Single public entry point. Verifies JWT signature/expiry on protected routes \emph{before} proxying (\texttt{requireAuth}); routes by URL prefix via \texttt{http-proxy-middleware}; rate-limits every route except \texttt{/health}; serves a combined Swagger UI at \texttt{/docs}. Does \emph{not} enforce role/ownership rules -- that is left to the owning service. \\
+Auth Service & Owns the \texttt{users} table. Handles registration (bcrypt hashing), login (JWT issuance), \texttt{/me}, and a demo reporting endpoint gated to \texttt{admin}/\texttt{teacher}. \\
+Academic Service & Owns \texttt{students}, \texttt{courses}, \texttt{enrollments}, \texttt{grades}. Enforces role/ownership rules per endpoint (e.g. a teacher may only grade their own courses). Publishes \texttt{enrollment.created} on successful enrollment. \\
+Finance Service & Owns \texttt{invoices}. Serves \texttt{GET /api/invoices} and independently consumes \texttt{enrollment.created} to create invoices. \\
+MySQL 8 & Single shared relational database (\texttt{smartschool}), one schema across all three modules, accessed by each service through its own connection pool with parameterized queries only. \\
+RabbitMQ 3.13 & Message broker; one durable direct exchange (\texttt{school\_events}) and one durable queue (\texttt{invoice\_creation\_queue}) bound with routing key \texttt{enrollment.created}. Management UI on \texttt{:15672} for live inspection. \\
+React Frontend & Single-page application (Vite + React). Holds the JWT and user profile in context, persisted to \texttt{localStorage}; calls the Gateway exclusively, never a backend service directly. \\
+\bottomrule
+\end{longtable}
+
+% ================================================================
+\chapter{Use Case Model}
+
+\section{Actors}
+\begin{center}
+\begin{tabular}{@{}p{2.6cm}p{11.4cm}@{}}
+\toprule
+\textbf{Actor} & \textbf{Description} \\
+\midrule
+Admin & Creates courses, enrolls students on their behalf, views reports; highest privilege. \\
+Teacher & Records grades for courses they teach; views reports alongside Admin. \\
+Student & Registers, logs in, enrolls in courses, views their own enrollments, grades, and invoices. \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Use Case Diagram}
+Figure~\ref{fig:usecase} shows the actors and the use cases each participates in.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/smartschool/01_usecase.png}
+\caption{Use case diagram for \sysname{} (PlantUML source: \texttt{figures/smartschool/01\_usecase.puml})}
+\label{fig:usecase}
+\end{figure}
+
+\clearpage
+\section{Key Use Case Specification: Enroll in a Course}
+\begin{center}
+\begin{tabular}{@{}p{3.3cm}p{10.4cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+Primary actor & Student (or Admin, on a student's behalf) \\
+Preconditions & Actor is authenticated; the target course exists \\
+Main flow & (1) Actor calls \texttt{POST /api/v1/enrollments} via the Gateway; (2) Gateway verifies the JWT and forwards to Academic Service; (3) Academic Service inserts the enrollment and commits it; (4) Academic Service publishes \texttt{enrollment.created} and returns \texttt{201} immediately; (5) Finance Service consumes the event and creates a pending invoice, independently \\
+Alternate flow & Duplicate enrollment $\rightarrow$ \texttt{409}, no event published. Broker/Finance Service temporarily down $\rightarrow$ enrollment still succeeds; the event stays durably queued and is processed once the consumer reconnects \\
+Postconditions & Enrollment recorded; an invoice for it eventually appears without further action from the actor \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Key Use Case Specification: Record a Grade}
+\begin{center}
+\begin{tabular}{@{}p{3.3cm}p{10.4cm}@{}}
+\toprule
+\textbf{Field} & \textbf{Description} \\
+\midrule
+Primary actor & Teacher (or Admin) \\
+Preconditions & Actor is authenticated with role \texttt{admin} or \texttt{teacher}; the enrollment exists \\
+Main flow & (1) Actor calls \texttt{POST /api/v1/grades} with enrollment id, assessment type, and score; (2) Academic Service verifies the JWT; (3) if the caller is a Teacher, the service checks the enrollment's course is taught by that teacher; (4) the grade is recorded \\
+Alternate flow & A Teacher attempting to grade a course they do not teach receives \texttt{403} \\
+Postconditions & The grade is recorded and visible to the student, the recording teacher, and any Admin \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\chapter{Static Structure -- Data Model}
+
+\section{Overview}
+Figure~\ref{fig:erd} shows the eight tables of the \texttt{smartschool}
+schema and their relationships, spanning the shared identity table and the
+three functional modules. The full DDL lives in
+\texttt{database/schema.sql}.
+
+\begin{figure}[h!]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.7cm and 1.0cm]
+
+  \node[entity] (users) {\textbf{\underline{users}}\\ id (PK)\\ name, email (UQ)\\ password\_hash\\ role};
+
+  \node[entity, below=1.6cm of users] (students) {\textbf{\underline{students}}\\ id (PK)\\ user\_id (FK, UQ)\\ admission\_number (UQ)\\ guardian\_name/phone};
+
+  \node[entity, right=2.6cm of users] (courses) {\textbf{\underline{courses}}\\ id (PK)\\ code (UQ), name\\ teacher\_id (FK)\\ fee\_amount, term};
+
+  \node[entity, below=1.6cm of courses] (enrollments) {\textbf{\underline{enrollments}}\\ id (PK)\\ student\_id (FK)\\ course\_id (FK)\\ status \quad UQ(student,course)};
+
+  \node[entity, below=1.6cm of students] (grades) {\textbf{\underline{grades}}\\ id (PK)\\ enrollment\_id (FK)\\ assessment\_type, score\\ recorded\_by (FK)};
+
+  \node[entity, below=1.6cm of enrollments] (invoices) {\textbf{\underline{invoices}}\\ id (PK)\\ student\_id (FK)\\ enrollment\_id (FK, UQ)\\ amount, status, momo\_reference};
+
+  \node[entity, right=2.6cm of courses] (payrollruns) {\textbf{\underline{payroll\_runs}}\\ id (PK)\\ period\_start/end\\ status, created\_by (FK)};
+
+  \node[entity, below=1.6cm of payrollruns] (payslips) {\textbf{\underline{payslips}}\\ id (PK)\\ payroll\_run\_id (FK)\\ staff\_id (FK)\\ base\_salary, net\_pay \quad UQ(run,staff)};
+
+  \draw[rel] (users) -- node[left,font=\tiny]{1:1} (students);
+  \draw[rel] (users) -- node[above,font=\tiny]{1:N teaches} (courses);
+  \draw[rel] (students) -- node[above,font=\tiny]{1:N} (enrollments);
+  \draw[rel] (courses) -- node[right,font=\tiny]{1:N} (enrollments);
+  \draw[rel] (enrollments) -- node[above,font=\tiny]{1:N} (grades);
+  \draw[rel] (users) to[bend left=45] node[right,font=\tiny]{1:N records} (grades);
+  \draw[rel] (students) -- node[above,font=\tiny]{1:N} (invoices);
+  \draw[rel] (enrollments) -- node[right,font=\tiny]{1:1} (invoices);
+  \draw[rel] (users) -- node[above,font=\tiny]{1:N} (payrollruns);
+  \draw[rel] (payrollruns) -- node[right,font=\tiny]{1:N} (payslips);
+  \draw[rel] (users) to[bend right=45] node[right,font=\tiny]{1:N} (payslips);
+
+\end{tikzpicture}}
+\caption{Entity-Relationship Diagram for \sysname{} (PK = primary key, FK = foreign key, UQ = unique constraint). Payroll tables (right) are implemented in the schema but not yet exposed by a service.}
+\label{fig:erd}
+\end{figure}
+
+\section{Notable Design Decisions}
+\begin{itemize}[leftmargin=1.4em]
+  \item \texttt{students} is a separate table, 1:1 with \texttt{users}, rather than adding academic-only columns to \texttt{users} -- keeps authentication identity (login/role) separate from domain profile data.
+  \item There is no separate \texttt{teachers} table: a teacher is simply a \texttt{users} row with \texttt{role = 'teacher'}; \texttt{courses.teacher\_id} and \texttt{grades.recorded\_by} reference \texttt{users.id} directly.
+  \item \texttt{invoices.amount} is deliberately a \emph{price snapshot at enrollment time}, not a live reference to \texttt{courses.fee\_amount} -- this is not a 3NF violation, since it represents a historical fact (``this enrollment was invoiced for this amount''), and a later fee change must not retroactively alter an issued invoice.
+  \item \texttt{invoices.enrollment\_id} is \texttt{UNIQUE}, enforcing at the database level that an enrollment can never produce more than one invoice -- this is what makes the event consumer's duplicate-delivery handling (Section~\ref{sec:idempotency}) safe without extra application-level locking.
+  \item Money columns use \texttt{DECIMAL(10,2)}, never \texttt{FLOAT}/\texttt{REAL}, to avoid floating-point rounding error on currency.
+\end{itemize}
+
+\section{Normalization (3NF)}
+Every table is in Third Normal Form: every non-key column depends on the
+whole primary key and nothing else. Fixed value sets (\texttt{role},
+\texttt{status}, \texttt{assessment\_type}, \texttt{method}) use native
+\texttt{ENUM} types rather than free text, preventing invalid values at the
+schema level. Indexes are added on every foreign key expected to be
+filtered on in a live query (\texttt{courses.teacher\_id},
+\texttt{enrollments.student\_id}/\texttt{course\_id},
+\texttt{grades.enrollment\_id}/\texttt{recorded\_by},
+\texttt{invoices.student\_id}, \texttt{payslips.staff\_id}), beyond the
+exam's 2-index minimum.
+
+\section{UML Class Diagram}
+Where Figure~\ref{fig:erd} above is a \emph{database-oriented} ER diagram
+(tables, columns, keys), Figure~\ref{fig:class} is the corresponding
+\emph{UML class diagram}: the same domain model expressed as classes with
+typed attributes, key operations, enumerations, and UML association
+multiplicities, matching the code's object shape rather than its storage
+shape.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{figures/smartschool/02_class.png}
+\caption{UML class diagram for \sysname{} (PlantUML source: \texttt{figures/smartschool/02\_class.puml})}
+\label{fig:class}
+\end{figure}
+
+% ================================================================
+\chapter{Dynamic Behaviour}
+
+\section{Sequence Diagram: Registration and Login}
+Figure~\ref{fig:seq-auth} traces account creation and authentication.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{figures/smartschool/03_seq_auth.png}
+\caption{Sequence diagram: registration and login (PlantUML source: \texttt{figures/smartschool/03\_seq\_auth.puml})}
+\label{fig:seq-auth}
+\end{figure}
+
+\section{Sequence Diagram: Enroll in a Course (Async Invoice Creation)}
+Figure~\ref{fig:seq-enroll} shows the central asynchronous workflow: the
+Academic Service never waits for the Finance Service.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{figures/smartschool/04_seq_enrollment_invoice.png}
+\caption{Sequence diagram: enrollment triggers asynchronous invoice creation (PlantUML source: \texttt{figures/smartschool/04\_seq\_enrollment\_invoice.puml})}
+\label{fig:seq-enroll}
+\end{figure}
+
+\clearpage
+\section{Sequence Diagram: Record a Grade}
+Figure~\ref{fig:seq-grade} shows the ownership check that restricts a
+Teacher to grading only the courses they teach, enforced independently by
+Academic Service even though the Gateway already confirmed the caller is
+logged in.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\linewidth]{figures/smartschool/05_seq_grade.png}
+\caption{Sequence diagram: recording a grade, with teacher-ownership check (PlantUML source: \texttt{figures/smartschool/05\_seq\_grade.puml})}
+\label{fig:seq-grade}
+\end{figure}
+
+\section{State Transition Diagram: Invoice}
+Figure~\ref{fig:state} shows the lifecycle of an \texttt{invoices.status}
+value. Payment collection (the \texttt{pending} $\rightarrow$ \texttt{paid}
+transition being driven by a real gateway) is planned; today an invoice can
+be created and, if applicable, cancelled, but there is no endpoint yet that
+performs the \texttt{paid} transition.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/smartschool/07_state_invoice.png}
+\caption{State transition diagram: invoice status lifecycle (PlantUML source: \texttt{figures/smartschool/07\_state\_invoice.puml})}
+\label{fig:state}
+\end{figure}
+
+\section{Activity Diagram: Enrollment-to-Invoice Workflow}
+Figure~\ref{fig:activity} lays out the same enrollment workflow as
+Figure~\ref{fig:seq-enroll}, but as control flow rather than
+inter-participant messaging -- useful for walking the examiner through the
+decision points (duplicate enrollment, broker unavailable, duplicate event
+delivery) rather than the wire messages.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.85\linewidth]{figures/smartschool/06_activity_enrollment.png}
+\caption{Activity diagram: enrollment-to-invoice workflow, including the fork into an immediate HTTP response and an independent asynchronous branch (PlantUML source: \texttt{figures/smartschool/06\_activity\_enrollment.puml})}
+\label{fig:activity}
+\end{figure}
+
+\section{Object Diagram: Sample Enrollment Snapshot}
+Figure~\ref{fig:object} is a concrete runtime snapshot -- one specific
+student, course, enrollment, event, and invoice, with real attribute
+values -- as a worked instance of the class diagram in
+Figure~\ref{fig:class}. It uses the same example data as the event contract
+in Chapter~\ref{chap:api-design}, so the two can be read side by side.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/smartschool/08_object_snapshot.png}
+\caption{Object diagram: one enrollment, its triggering event, and the resulting invoice (PlantUML source: \texttt{figures/smartschool/08\_object\_snapshot.puml})}
+\label{fig:object}
+\end{figure}
+
+\section{Idempotent Event Consumption}
+\label{sec:idempotency}
+RabbitMQ guarantees \emph{at-least-once} delivery, meaning the same
+\texttt{enrollment.created} message can, in principle, be delivered more
+than once (e.g. after a consumer restart before an ack is sent). The
+Finance Service handles this by attempting the invoice insert and treating
+a unique-constraint violation on \texttt{invoices.enrollment\_id} as a
+successful no-op rather than an error -- the second delivery is
+acknowledged and discarded, and the invariant ``one invoice per
+enrollment'' never breaks. This is the deliberate mechanism, not an
+accident: idempotency is pushed down to a database constraint rather than
+implemented as fragile application-level deduplication logic.
+
+% ================================================================
+\chapter{API Design}
+\label{chap:api-design}
+
+\section{Routing Table (Gateway)}
+\begin{longtable}{L{5.0cm} L{6.0cm} p{2.4cm}}
+\toprule
+\textbf{External path} & \textbf{Forwarded to} & \textbf{Auth} \\
+\midrule
+\endhead
+\texttt{POST /api/v1/auth/register} & auth-service \texttt{/api/auth/register} & None \\
+\texttt{POST /api/v1/auth/login} & auth-service \texttt{/api/auth/login} & None \\
+\texttt{GET /api/v1/auth/me} & auth-service \texttt{/api/auth/me} & JWT \\
+\texttt{GET /api/v1/reports} & auth-service \texttt{/api/reports} & JWT (admin/teacher) \\
+\texttt{GET, POST /api/v1/courses} & academic-service \texttt{/api/courses} & JWT (POST: admin) \\
+\texttt{GET, POST /api/v1/enrollments} & academic-service \texttt{/api/enrollments} & JWT (POST: admin/student) \\
+\texttt{GET, POST /api/v1/grades} & academic-service \texttt{/api/grades} & JWT (POST: admin/teacher) \\
+\texttt{GET /api/v1/finance/invoices} & finance-service \texttt{/api/invoices} & JWT \\
+\bottomrule
+\end{longtable}
+
+\section{Event Contract: \texttt{enrollment.created}}
+Published to the direct exchange \texttt{school\_events} with routing key
+\texttt{enrollment.created}, persistent, and consumed by the
+\texttt{invoice\_creation\_queue}. Figure~\ref{fig:object} in Chapter~5
+renders this exact payload as an object diagram alongside the
+\texttt{Student}, \texttt{Course}, \texttt{Enrollment}, and \texttt{Invoice}
+instances it connects.
+
+\begin{verbatim}
+{
+  "eventId": "3f9c2e2a-...",
+  "eventType": "enrollment.created",
+  "occurredAt": "2026-08-15T10:00:00.000Z",
+  "data": {
+    "enrollmentId": 5,
+    "studentId": 3,
+    "studentName": "Ama Nti",
+    "studentEmail": "ama@smartschool.local",
+    "courseId": 3,
+    "courseCode": "SCI101",
+    "courseName": "Introduction to Science",
+    "feeAmount": "30000.00",
+    "term": "2026-S2"
+  }
+}
+\end{verbatim}
+
+\begin{infobox}
+\textbf{Why \texttt{studentId} is \texttt{students.id}, not \texttt{users.id}.}
+The event carries the domain-level student id directly, so Finance Service
+can insert straight into \texttt{invoices.student\_id} with no extra lookup
+back to Academic Service -- keeping the two services decoupled even at the
+data-access level.
+\end{infobox}
+
+% ================================================================
+\chapter{Security Design}
+
+\section{Authentication and Session Model}
+Passwords are hashed with bcrypt (10 salt rounds) before storage; the raw
+password is never stored or logged. On successful login, the Auth Service
+issues a JWT (1-hour expiry) signed with a secret shared, via environment
+variable, across every service and the Gateway. This makes sessions
+stateless: any service can verify a token's authenticity without a network
+call back to Auth Service.
+
+\section{Defense in Depth}
+Two independent layers check every protected request:
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Gateway layer} -- verifies the JWT's signature and expiry before proxying at all. An invalid/missing token is rejected with \texttt{401} and never reaches a backend service.
+  \item \textbf{Service layer} -- the owning service (Auth, Academic, or Finance) re-verifies the JWT and additionally enforces role/ownership rules specific to its own resources (e.g. a Teacher may only grade courses they teach).
+\end{enumerate}
+This split is deliberate: the Gateway is generic infrastructure answering
+``is this a logged-in user at all''; business-specific authorization rules
+stay with the service that owns the data.
+
+\section{OWASP Top 10 Mitigations}
+\begin{longtable}{L{3.4cm} L{10.6cm}}
+\toprule
+\textbf{Risk} & \textbf{Mitigation} \\
+\midrule
+\endhead
+Injection & Every query in every service uses \texttt{mysql2} parameterized statements (\texttt{pool.query(sql, [params])}); no request value is ever concatenated into a SQL string. \\
+Broken Authentication & bcrypt password hashing, 1-hour JWT expiry, and the Gateway rate limiter (10 req/60s/IP) doubling as brute-force login throttling on \texttt{/api/v1/auth/login}. Accepted gap: password policy is length $\geq 8$ only, no complexity rule -- a deliberate scope limit for a course project. \\
+Sensitive Data Exposure & \texttt{password\_hash} is destructured out of every user object before it is returned (\texttt{toPublicUser()}), used by both \texttt{/register} and \texttt{/login}. Accepted gap: CORS is currently open on every service; judged low-severity since this is a Bearer-token API with no ambient cookie credential a cross-origin page could silently attach. \\
+\bottomrule
+\end{longtable}
+
+% ================================================================
+\chapter{Performance and Reliability}
+
+\section{Rate Limiting}
+The Gateway applies \texttt{express-rate-limit} to every route except
+\texttt{/health}: 10 requests per 60 seconds per IP by default, both
+externally configurable (\texttt{RATE\_LIMIT\_MAX},
+\texttt{RATE\_LIMIT\_WINDOW\_MS}) without a code change. The 11th request in
+a window receives \texttt{429} with standard \texttt{RateLimit-*} headers
+showing remaining quota.
+
+\section{Load Testing}
+A k6 script (\texttt{load-testing/k6/gateway-load-test.js}) ramps to 20
+virtual users against the Gateway. Two profiles are used:
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Safety profile} (default limits) -- proves the rate limiter engages under realistic concurrent load; the \texttt{rate\_limited\_responses} counter is non-zero.
+  \item \textbf{Speed profile} (\texttt{RATE\_LIMIT\_MAX=100000}) -- measures genuine backend latency once the limiter is not a factor; the script's threshold requires \texttt{p(95) < 500ms}.
+\end{itemize}
+
+\section{Fault Tolerance in the Async Workflow}
+Both the publisher (Academic Service) and the consumer (Finance Service)
+connect to RabbitMQ with retry-and-backoff on startup, since a healthy
+container does not guarantee AMQP is immediately ready. Publishing is
+wrapped so that a RabbitMQ outage never fails or delays the enrollment HTTP
+response (Section~5.2); the message, once published, is durable and
+survives a broker restart. If Finance Service is stopped entirely, an
+enrollment still returns \texttt{201} immediately -- the message queues up
+and is drained once the service restarts, with no resend needed from
+Academic Service.
+
+% ================================================================
+\chapter{Deployment View}
+
+\section{Container Topology}
+\begin{longtable}{L{2.8cm} L{4.4cm} L{4.0cm} L{2.4cm}}
+\toprule
+\textbf{Container} & \textbf{Published port} & \textbf{Internal address} & \textbf{Depends on} \\
+\midrule
+\endhead
+db (MySQL 8) & \texttt{3307 $\to$ 3306} (host-only, avoids clashing with a local install) & \texttt{db:3306} & -- \\
+rabbitmq & \texttt{5673 $\to$ 5672}, \texttt{15672} (mgmt UI) & \texttt{rabbitmq:5672} & -- \\
+auth-service & not published & \texttt{auth-service:3000} & db \\
+academic-service & not published & \texttt{academic-service:4000} & db, rabbitmq \\
+finance-service & not published & \texttt{finance-service:4001} & db, rabbitmq \\
+gateway & \texttt{8081 $\to$ 8080} (only published service) & \texttt{gateway:8080} & auth, academic, finance \\
+\bottomrule
+\end{longtable}
+
+The whole backend starts from the repository root with a single command,
+\texttt{docker compose up --build}; the frontend is a separate repository
+with its own \texttt{docker-compose.yml}, started the same way, and talks
+to the Gateway at \texttt{http://localhost:8081} directly from the browser.
+
+% ================================================================
+\chapter{Planned Work (Weeks 5--6)}
+
+\begin{futurebox}
+\textbf{Not yet implemented, tracked here rather than silently absent.}
+\end{futurebox}
+
+\begin{itemize}[leftmargin=1.4em]
+  \item \textbf{Module feature (Week 5)} -- one complete end-to-end feature for the group's assigned module: leading candidates are payroll computation (HR: \texttt{payroll\_runs}/\texttt{payslips} already modeled) or invoice payment/reconciliation (Finance).
+  \item \textbf{Automated testing and CI/CD (Week 5)} -- a first batch of automated tests for the chosen feature, and a GitHub Actions pipeline that runs them on every push.
+  \item \textbf{Full integration \& documentation (Week 6)} -- a single \texttt{docker-compose} command bringing up every service, the database, the Gateway, and the message broker together (already true for the backend today; needs re-verification on a clean machine), plus the completed UML diagram set (this SDD) and this SRS kept in sync with the final system.
+\end{itemize}
+
+\end{document}

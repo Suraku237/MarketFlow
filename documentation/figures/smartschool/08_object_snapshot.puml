@@ -1,0 +1,63 @@
+@startuml 08_object_snapshot
+skinparam backgroundColor white
+skinparam shadowing false
+skinparam defaultFontName Helvetica
+skinparam object {
+  BackgroundColor #F1EFE8
+  BorderColor #3C3489
+  ArrowColor #3C3489
+  FontColor #26215C
+}
+
+object "ama : Student" as ama {
+  id = 3
+  admissionNumber = "STU-2026-014"
+  name = "Ama Nti"
+  email = "ama@smartschool.local"
+}
+
+object "sci101 : Course" as sci101 {
+  id = 3
+  code = "SCI101"
+  name = "Introduction to Science"
+  feeAmount = 30000.00
+  term = "2026-S2"
+}
+
+object "enrollment5 : Enrollment" as enr5 {
+  id = 5
+  status = "active"
+  enrolledAt = "2026-08-15T10:00:00Z"
+}
+
+object "event : DomainEvent" as evt {
+  eventId = "3f9c2e2a-..."
+  eventType = "enrollment.created"
+  occurredAt = "2026-08-15T10:00:00.000Z"
+}
+
+object "invoice12 : Invoice" as inv12 {
+  id = 12
+  studentId = 3
+  enrollmentId = 5
+  amount = 30000.00
+  status = "pending"
+  momoReference = null
+  issuedAt = "2026-08-15T10:00:04Z"
+}
+
+ama "1" -- "1" enr5
+sci101 "1" -- "1" enr5
+enr5 ..> evt : publishes >
+evt ..> inv12 : consumed, creates >
+enr5 "1" -- "1" inv12
+
+note bottom of inv12
+  This is exactly the concrete
+  instance data used as the worked
+  example in the event contract
+  (Chapter 6) -- one enrollment,
+  one event, one invoice, all
+  traceable to each other.
+end note
+@enduml
